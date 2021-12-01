@@ -1,4 +1,4 @@
-# puzzle-3
+# Puzzle 3
 
 ## Contents
 - [Puzzle overview](#puzzle-overview)
