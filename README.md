@@ -34,7 +34,9 @@ He has been fired a few years ago due to automatisation and digitalization of th
 ## Puzzle Description 
 
 ### Puzzle Part 1
+A world map is placed in the room. There are three colored pins placed on three diffeents countries pinned on the map. 
 
 ### Puzzle Part 2
 
 ## Documents
+The datasheets can be found in the datasheets directory. 
