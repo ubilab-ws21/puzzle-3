@@ -38,10 +38,10 @@ He has been fired a few years ago due to automatisation and digitalization of th
 There is an antenna hidden in the room. When the radio turns on, there is nothing but noise to hear. The players need to find the antenna and plug it into a socket one can find at the radio. This will trigger a button. Also, the correct positioning of the antenna makes a difference which is observed by an encoder insider the radio case. When both is fine, there will be no noise anymore and an emergency broadcast can be heard nicely.
 
 
-### Puzzle Part 1
+### Puzzle Part 2
 A world map is placed in the room. There are three colored pins placed on three diffeents countries pinned on the map. 
 
-### Puzzle Part 2
+### Puzzle Part 3
 
 ## Documents
 The datasheets can be found in the datasheets directory. 
