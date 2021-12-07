@@ -3,8 +3,8 @@
 #include <DFRobotDFPlayerMini.h>
 
 
-#define TX 37 //GPIO23
-#define RX 36 //GPIO22
+#define TX 23 //GPIO23
+#define RX 22 //GPIO22
 
 // RX/TX port definition
 SoftwareSerial DFPlayerSoftwareSerial(TX, RX);
@@ -45,7 +45,7 @@ void setup(){
     while(1);
   } else {
     Serial.print(String(numberFiles) + " Dateien im Ordner " + String(folder));
-    mp3Player.loopFolder(folder); 
+    mp3Player.loopFolder(folder);
   }
 }
 
