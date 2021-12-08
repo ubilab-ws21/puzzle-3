@@ -1,0 +1,8 @@
+{
+    "files.associations": {
+        "disp_driver.h": "c",
+        "lvgl_helpers.h": "c",
+        "touch_driver.h": "c",
+        "lvgl.h": "c"
+    }
+}
