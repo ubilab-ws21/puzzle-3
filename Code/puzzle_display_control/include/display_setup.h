@@ -11,6 +11,7 @@
 #include "Adafruit_RA8875.h"
 #include "Adafruit_I2CDevice.h"
 
+#define BACKGROUND_COLOR 0xFFF0
 
 
 void init_display(void);

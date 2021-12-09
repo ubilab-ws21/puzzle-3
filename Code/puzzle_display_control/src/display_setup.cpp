@@ -69,7 +69,7 @@ void init_display()
     #endif
 
 
-    tft.fillScreen(RA8875_WHITE);
+    tft.fillScreen(BACKGROUND_COLOR);
     /* _tsMatrix should now be populated with the correct coefficients! */
     Serial.println("Waiting for touch events ...");
 
