@@ -5444,6 +5444,20 @@ W = angled&lt;p&gt;
 <wire x1="76.2" y1="48.26" x2="81.28" y2="48.26" width="0.1524" layer="91"/>
 </segment>
 </net>
+<net name="AUDIO_TX" class="0">
+<segment>
+<pinref part="U1" gate="G$1" pin="IO4"/>
+<wire x1="76.2" y1="40.64" x2="81.28" y2="40.64" width="0.1524" layer="91"/>
+<label x="81.28" y="40.64" size="1.778" layer="95"/>
+</segment>
+</net>
+<net name="AUDIO_RX" class="0">
+<segment>
+<pinref part="U1" gate="G$1" pin="IO15"/>
+<wire x1="76.2" y1="33.02" x2="81.28" y2="33.02" width="0.1524" layer="91"/>
+<label x="81.28" y="33.02" size="1.778" layer="95"/>
+</segment>
+</net>
 </nets>
 </sheet>
 </sheets>
