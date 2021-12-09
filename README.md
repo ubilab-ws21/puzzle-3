@@ -39,9 +39,15 @@ There is an antenna hidden in the room. When the radio turns on, there is nothin
 
 
 ### Puzzle Part 2
-A world map is placed in the room. There are three colored pins placed on three diffeents countries pinned on the map. 
+A world map is placed in the room. There are three colored pins placed on three diffeents countries pinned on the map. Meanwhile, the screen of the radio shows a three slider bars in the same colors, where the values of each bar can be changed with a correspondingly colored encoder.
+Both the radio and the world map belong to the former control room worker, i.e. his name is printed on both the radio case and the world map.
+The emergency broadcast plays repeatedly. 
+The players must look at the pins on the map, extract the difference of the locations to the greenwich mean time (=delta) and turn the correspondingly colored encoders so that the sliding bars have the deltas as values. When this is done, the Emergency broadcast stops, and instead the voice of the former control room worker, a hobby radio operator, arises. Also the screen changed. The puzzle is solved.
 
 ### Puzzle Part 3
+In the recording, the former control room worker repeatedly says that he has forseen this and that going away from manual control to autonoumously controlled distribution was a bad choice. 
+The screen shows a word puzzle, where it is not clear yet how it looks exactly. From the voice from the radio guy it becomes clear how to solve the puzzle.
+After the puzzle was solved, the screen changes again and shows the code which is needed for the next puzzle of the next group (code for opening the door via light bulbs)
 
 ## Documents
-The datasheets can be found in the datasheets directory. 
+The datasheets can be found in the datasheets directory 
