@@ -30,6 +30,8 @@ void setup()
     sliding_bars(1);
     sliding_bars(2);
     sliding_bars(3);
+#else
+    init_rect();
 #endif
 }
 
@@ -40,15 +42,15 @@ void setup()
 int encoder_triggered = 0;
 void loop()
 {
+tsPoint_t raw;
 
 #ifdef LETTER_GAME
-    dissapearing_letters();
+    //dissapearing_letters();
+    
     while(1)
     {
-        if (check_encoder())
-        {
-            break;
-        }
+        waitForTouchorEncoderEvent(&raw);
+        rectangles_game(raw);   
     }
 #else
     while(1)

@@ -16,7 +16,7 @@
 #define FORCE_CALIBRATION false
 
 
-#define RA8875_INT     14
+
 #define RA8875_CS      5
 #define RA8875_RESET   27
 

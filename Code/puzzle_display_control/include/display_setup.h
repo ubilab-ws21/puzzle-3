@@ -13,6 +13,8 @@
 
 #define BACKGROUND_COLOR 0xFFF0
 
+#define RA8875_INT     14
+
 
 void init_display(void);
 int setCalibrationMatrix( tsPoint_t * displayPtr, tsPoint_t * screenPtr, tsMatrix_t * matrixPtr);

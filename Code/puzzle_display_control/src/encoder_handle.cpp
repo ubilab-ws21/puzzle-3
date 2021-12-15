@@ -27,7 +27,7 @@ void init_encoder()
     ESP32Encoder::useInternalWeakPullResistors=UP;
 
 	// use pin 19 and 18 for the first encoder
-	encoder1._encoder.attachHalfQuad(32, 33);
+	encoder1._encoder.attachSingleEdge(32, 33);
 	// use pin 17 and 16 for the second encoder
 	//encoder2.attachHalfQuad(17, 16);
 		
@@ -94,4 +94,23 @@ int encoder_get_value(int encoder_num)
         return encoder3.encoder_value;
     }
     return -1;
+}
+
+void encoder_set_value(int encoder_num, int value)
+{
+     if(encoder_num == 1)
+    {
+        encoder1.encoder_value = value; 
+        encoder1._encoder.setCount(encoder1.encoder_value);
+    }
+    if(encoder_num ==2)
+    {
+        encoder2.encoder_value = value; 
+        encoder2._encoder.setCount(encoder2.encoder_value);
+    }
+    if(encoder_num ==3)
+    {
+        encoder3.encoder_value = value; 
+        encoder3._encoder.setCount(encoder3.encoder_value);
+    }
 }
