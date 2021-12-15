@@ -6,15 +6,14 @@
 #define TX 23 //GPIO23
 #define RX 22 //GPIO22
 
+#define ESA 1       // folder number of Emergency Message
+#define Ferdi 2     // folder number of Radio station message 
+#define goodNews 3  // folder number of good News Radio
 // RX/TX port definition
 SoftwareSerial DFPlayerSoftwareSerial(TX, RX);
 
 // Name of Player
 DFRobotDFPlayerMini mp3Player;
-
-// Number of Folder. Folder must contain data
-int folder = 1; 
-
 
 void setup(){
   DFPlayerSoftwareSerial.begin(9600);
@@ -35,6 +34,12 @@ void setup(){
   // Volume 1 to 30
   mp3Player.volume(15);
 
+
+
+
+
+
+
   // detect number of files in folder and show
   int numberFiles = mp3Player.readFileCountsInFolder(folder);
 
@@ -45,10 +50,10 @@ void setup(){
     while(1);
   } else {
     Serial.print(String(numberFiles) + " Dateien im Ordner " + String(folder));
-    mp3Player.loopFolder(folder);
+    mp3Player.loopFolder(ESA);
   }
 }
 
 void loop(){
-  
+  if 
 }
