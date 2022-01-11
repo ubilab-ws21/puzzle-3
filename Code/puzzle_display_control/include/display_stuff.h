@@ -25,6 +25,7 @@ bool sliding_bars(int encoder_num);
 int convert_encoder2display_x(int encoder_value);
 int convert_encoder2display_y(int x_val, int max_y_val);
 int waitForTouchorEncoderEvent(tsPoint_t *point);
+void first_screen(void);
 void final_screen(void);
 
 #endif

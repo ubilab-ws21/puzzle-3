@@ -69,10 +69,16 @@ void init_display()
     #endif
 
 
-    tft.fillScreen(BACKGROUND_COLOR);
+    fill_display(BACKGROUND_COLOR);
     /* _tsMatrix should now be populated with the correct coefficients! */
     Serial.println("Waiting for touch events ...");
 
+}
+
+
+void fill_display(int color)
+{
+    tft.fillScreen(color);
 }
 /**************************************************************************/
 /*!

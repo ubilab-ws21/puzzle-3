@@ -17,6 +17,7 @@
 
 
 void init_display(void);
+void fill_display(int color);
 int setCalibrationMatrix( tsPoint_t * displayPtr, tsPoint_t * screenPtr, tsMatrix_t * matrixPtr);
 int calibrateTSPoint( tsPoint_t * displayPtr, tsPoint_t * screenPtr, tsMatrix_t * matrixPtr );
 

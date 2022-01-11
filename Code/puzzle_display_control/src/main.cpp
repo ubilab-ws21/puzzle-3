@@ -76,7 +76,7 @@ void setup()
  //   init_rect();
 //#endif
 
-    state = 1;
+    state = 0;
     
 }
 
@@ -96,6 +96,18 @@ tsPoint_t raw;
     {
         switch(state)
         {
+        case 0:
+            if(!flagset)
+            {
+                first_screen();
+                flagset = true;
+            }
+            encoder_triggered = check_encoder();
+            if (encoder_triggered)
+            {
+                state = 1;
+            }
+            break;
         case 1:
             if(!flagset){
                 mp3Player.loopFolder(ESA);

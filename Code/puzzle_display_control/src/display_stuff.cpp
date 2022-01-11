@@ -98,35 +98,6 @@ void init_rect()
         rectangles[i].color = RA8875_BLUE;
 
     }
-    /*
-    rectangle1.tr_corner.x = 0;
-    rectangle1.tr_corner.y = 0;
-    rectangle1.onLastPos = false;
-    rectangle1.color = RA8875_BLUE;
-
-    rectangle2.tr_corner.x = 0;
-    rectangle2.tr_corner.y = 0;
-    rectangle1.onLastPos = false;
-    rectangle2.color = RA8875_BLUE;
-
-    rectangle3.tr_corner.x = 0;
-    rectangle3.tr_corner.y = 0;
-    rectangle3.onLastPos = false;
-    rectangle3.color = RA8875_BLUE;
-
-    rectangle4.tr_corner.x = 0;
-    rectangle4.tr_corner.y = 0;
-    rectangle4.onLastPos = false;
-    rectangle4.color = RA8875_BLUE;
-
-    rectangle5.tr_corner.x = 0;
-    rectangle5.tr_corner.y = 0;
-    rectangle5.onLastPos = false;
-    rectangle5.color = RA8875_BLUE;
-
-    rectangle6.tr_corner.x = 0;
-    rectangle6.tr_corner.y = 0;
-    rectangle6.color = RA8875_BLUE;*/
 
     calibrateTSPoint(&rectangles[0].tr_corner_cal, &rectangles[0].tr_corner, &local_matrix);
 
@@ -662,7 +633,21 @@ int waitForTouchorEncoderEvent(tsPoint_t * point)
     }
     return 0;
 }
-
+void first_screen()
+{
+    static Adafruit_RA8875 local_tft =  gettft();
+    fill_display(RA8875_BLACK);
+    for(int i = 0; i<1000; i++)
+    {
+        int rand_x = random(900);
+        int rand_y = random(480);
+        Serial.println(rand_x);
+        Serial.println(rand_y);
+        
+        local_tft.drawPixel(rand_x, rand_y, RA8875_WHITE);
+    }    
+    //local_tft.drawRect(100,100, 200, 200, RA8875_BLUE);
+}
 
 void final_screen()
 {
