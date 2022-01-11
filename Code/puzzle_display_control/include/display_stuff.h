@@ -12,7 +12,7 @@ struct rect{
 
 
 void init_rect(void);
-void rectangles_game(tsPoint_t touch_raw);
+bool rectangles_game(tsPoint_t touch_raw);
 int get_section(int x, int y);
 bool is_section_with_letter(int section);
 char get_letter(int section);
@@ -21,9 +21,10 @@ rect select_rectangle(int num);
 void save_rect_data(int rect_num, tsPoint_t point, int color);
 int position_occupied(int section);
 void dissapearing_letters(void);
-void sliding_bars(int encoder_num);
+bool sliding_bars(int encoder_num);
 int convert_encoder2display_x(int encoder_value);
 int convert_encoder2display_y(int x_val, int max_y_val);
 int waitForTouchorEncoderEvent(tsPoint_t *point);
+void final_screen(void);
 
 #endif

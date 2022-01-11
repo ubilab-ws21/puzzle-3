@@ -140,9 +140,10 @@ void init_rect()
 
     selected_rect = rectangles[0];
 
+    local_tft.fillScreen(BACKGROUND_COLOR);
 }
 
-void rectangles_game(tsPoint_t touch_raw)
+bool rectangles_game(tsPoint_t touch_raw)
 {
     static Adafruit_RA8875 local_tft = gettft();
     static tsMatrix_t local_matrix = gettsMatrix();
@@ -161,7 +162,7 @@ void rectangles_game(tsPoint_t touch_raw)
         {
             encoder_set_value(1, 0);
             last_action = last_action_none;
-            return;
+            return 0;
         }
         Serial.print("selected rect: ");
         Serial.println(rect_selected_num);
@@ -213,6 +214,13 @@ void rectangles_game(tsPoint_t touch_raw)
                 }
                 else if(isNewRecToCome(rect_selected_num))
                 {
+
+
+                    //for now: puzzle is solved now!
+                    Serial.print("puzzle solved");
+                    return 1;
+
+                    
                     Serial.print("num rect visinle");
                     Serial.print(num_rect_visible);
                     if(num_rect_visible < 6)
@@ -309,6 +317,8 @@ void rectangles_game(tsPoint_t touch_raw)
         }
         last_action = last_action_none;
     }
+    //puzzle not solved
+    return 0;
 }
 
 bool isNewRecToCome(int rect_selected_num)
@@ -347,6 +357,7 @@ bool isNewRecToCome(int rect_selected_num)
     }
     return true;
 }
+
 rect select_rectangle(int num)
 {
     switch(num)
@@ -528,7 +539,7 @@ void dissapearing_letters()
     }
 }
 
-void sliding_bars(int encoder_num)
+bool sliding_bars(int encoder_num)
 {
     static Adafruit_RA8875 local_tft = gettft();
     int32_t color;
@@ -565,6 +576,22 @@ void sliding_bars(int encoder_num)
     Serial.print(encoder_value);
 
     local_tft.fillTriangle(MIN_X_VAL, max_Y_val, bar_fill_value_x, max_Y_val, bar_fill_value_x, bar_fill_value_y, color);
+
+    int solved_values[3] = {10,-4,6};
+
+    int i;
+    for(i = 1; i<=NUM_ENCODERS_DEFINED; i++)
+    {
+        Serial.print(solved_values[i]);
+        Serial.print(encoder_get_value(i));
+        if(encoder_get_value(i) != solved_values[i-1])
+        {
+            // not solved
+            return 0;
+        }      
+    }
+    //solved
+    return 1;
 }
 
 int convert_encoder2display_x(int encoder_value)
@@ -634,4 +661,11 @@ int waitForTouchorEncoderEvent(tsPoint_t * point)
     point->y = 0;
     }
     return 0;
+}
+
+
+void final_screen()
+{
+    static Adafruit_RA8875 local_tft = gettft();
+    local_tft.fillScreen(RA8875_BLUE);
 }

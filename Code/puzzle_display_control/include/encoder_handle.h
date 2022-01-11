@@ -1,6 +1,7 @@
 #ifndef ENCODER_HANDLE_H
 #define ENCODER_HANDLE_H
 
+#define NUM_ENCODERS_DEFINED 1
 
 void init_encoder(void);
 int check_encoder(void);
