@@ -637,16 +637,17 @@ void first_screen()
 {
     static Adafruit_RA8875 local_tft =  gettft();
     fill_display(RA8875_BLACK);
+ 
+    uint16_t lcd_buffer[1000];
     for(int i = 0; i<1000; i++)
     {
-        int rand_x = random(900);
-        int rand_y = random(480);
-        Serial.println(rand_x);
-        Serial.println(rand_y);
-        
-        local_tft.drawPixel(rand_x, rand_y, RA8875_WHITE);
-    }    
-    //local_tft.drawRect(100,100, 200, 200, RA8875_BLUE);
+        lcd_buffer[i] = RA8875_WHITE;
+    }
+
+    for(int i = 0; i<480; i+=5)
+    {
+        local_tft.drawPixels(lcd_buffer, 800, 300, i);
+    }
 }
 
 void final_screen()

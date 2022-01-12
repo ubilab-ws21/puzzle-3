@@ -101,16 +101,19 @@ tsPoint_t raw;
             {
                 first_screen();
                 flagset = true;
+                
             }
             encoder_triggered = check_encoder();
-            if (encoder_triggered)
+            if (encoder_triggered) //if(antenna applied)
             {
                 state = 1;
+                flagset = false;
             }
             break;
         case 1:
             if(!flagset){
                 mp3Player.loopFolder(ESA);
+                fill_display(BACKGROUND_COLOR);
                 sliding_bars(1);
                 sliding_bars(2);
                 sliding_bars(3);
