@@ -1,10 +1,7 @@
 #include <ESPmDNS.h>
 #include <SoftwareSerial.h>
 #include <DFRobotDFPlayerMini.h>
-
-void setupTest();
-void statusChange();
-void volumeControl();
+#include <ESP32Encoder.h>
 
 
 #define TX 22 
@@ -15,8 +12,20 @@ void volumeControl();
 #define goodNews 3  // folder number of good News Radio
 // RX/TX port definition
 
-int state = 0;   // is to be updated if gamestate changes
+void setupTest();
+void statusChange();
+void volumeControl();
 
+ESP32Encoder volume;
+
+// Init Encoder for Volume control
+volume._encoder.attachHalfQuad(32, 33);
+volume._encoder.setCount(0);
+
+Serial.println("Encoder Start = " + String((int32_t)volume._encoder.getCount()));
+
+
+int state = 0;   // is to be updated if gamestate changes
 SoftwareSerial DFPlayerSoftwareSerial(TX, RX);
 
 // Name of Player
@@ -41,13 +50,16 @@ void setup(){
   // Volume 1 to 30
   mp3Player.volume(15);
 
+  int enc = 0;
 
 }
 
 void loop(){
   state = 0;
-  statusChange(state);
+  statusChange(state);  
 }
+
+
 
 
 
