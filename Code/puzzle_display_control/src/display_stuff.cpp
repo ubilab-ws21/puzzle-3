@@ -11,14 +11,14 @@
 #define MIN_X_VAL 100
 #define MEAN_X_VAL 400
 
-#define MAX_Y_VAL_1 470
-#define MIN_Y_VAL_1 420
+#define MAX_Y_VAL_1 450
+#define MIN_Y_VAL_1 400
 
-#define MAX_Y_VAL_2 400
-#define MIN_Y_VAL_2 350
+#define MAX_Y_VAL_2 380
+#define MIN_Y_VAL_2 330
 
-#define MAX_Y_VAL_3 340
-#define MIN_Y_VAL_3 290
+#define MAX_Y_VAL_3 310
+#define MIN_Y_VAL_3 260
 
 #define STEP_SIZE 25
 
@@ -535,20 +535,48 @@ bool sliding_bars(int encoder_num)
         min_Y_val = MIN_Y_VAL_3;
     }
 
+    local_tft.textMode();
+    local_tft.textSetCursor(300, 100);
+    
+
+    /* Render some text! */
+    char string[15] = "Ferdis Radio! ";
+    local_tft.textTransparent(RA8875_BLUE);
+    local_tft.textEnlarge(2.5);
+    local_tft.textWrite(string);
+
+    local_tft.graphicsMode();
     local_tft.fillTriangle(MIN_X_VAL, max_Y_val, MAX_X_VAL, max_Y_val, MAX_X_VAL, min_Y_val, BACKGROUND_COLOR);
     local_tft.drawTriangle(MIN_X_VAL, max_Y_val, MAX_X_VAL, max_Y_val, MAX_X_VAL, min_Y_val, color);
+
+    local_tft.textMode();
+    local_tft.textSetCursor(MIN_X_VAL-3, max_Y_val+5);
+    
+    char string1[4] = "-12";
+    local_tft.textTransparent(RA8875_BLUE);
+    local_tft.textEnlarge(0);
+    local_tft.textWrite(string1);
+
+    local_tft.textSetCursor(MAX_X_VAL-3, max_Y_val+5);
+    
+    char string2[4] = "+12";
+    local_tft.textWrite(string2);
+
+
 
     int encoder_value = encoder_get_value(encoder_num);
 
     int bar_fill_value_x = convert_encoder2display_x(encoder_value);
     int bar_fill_value_y = convert_encoder2display_y(bar_fill_value_x, max_Y_val);
 
-    Serial.println("encoder value");
+    Serial.print("value of encoder num ");
+    Serial.print(encoder_num);
+    Serial.print(": ");
     Serial.print(encoder_value);
 
     local_tft.fillTriangle(MIN_X_VAL, max_Y_val, bar_fill_value_x, max_Y_val, bar_fill_value_x, bar_fill_value_y, color);
 
-    int solved_values[3] = {10,-4,6};
+    int solved_values[3] = {10,-4,-1};
 
     int i;
     for(i = 1; i<=NUM_ENCODERS_DEFINED; i++)
@@ -587,7 +615,7 @@ int convert_encoder2display_y(int x_val, int max_y_val)
 
 /**************************************************************************/
 /*!
-    @brief  Waits for a touch event
+    @brief  Waits for a touch or encoder event
 */
 /**************************************************************************/
 int waitForTouchorEncoderEvent(tsPoint_t * point)
@@ -636,6 +664,7 @@ int waitForTouchorEncoderEvent(tsPoint_t * point)
 void first_screen()
 {
     static Adafruit_RA8875 local_tft =  gettft();
+    local_tft.graphicsMode();
     fill_display(RA8875_BLACK);
  
     uint16_t lcd_buffer[1000];
