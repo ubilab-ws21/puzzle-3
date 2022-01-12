@@ -1,9 +1,5 @@
 #include "encoder_handle.h"
-
-
 #include <ESP32Encoder.h>
-
-#define NUM_ENCODERS_DEFINED 1
 
 class Encoders {
     public:
@@ -11,10 +7,6 @@ class Encoders {
         int encoder_value;
         int old_value;
 };
-/*
-Encoders encoder1;
-Encoders encoder2;
-Encoders encoder3;*/
 
 Encoders encoder[NUM_ENCODERS_DEFINED];
 
@@ -24,12 +16,12 @@ void init_encoder()
     ESP32Encoder::useInternalWeakPullResistors=UP;
 
 	// use pin 19 and 18 for the first encoder
-	encoder[0]._encoder.attachSingleEdge(32, 33);
+	encoder[0]._encoder.attachSingleEdge(33, 32);
 	// use pin 17 and 16 for the second encoder
 	
     if(NUM_ENCODERS_DEFINED > 1)
     {
-        encoder[1]._encoder.attachSingleEdge(16, 17);
+        encoder[1]._encoder.attachSingleEdge(17, 16);
     }
     if(NUM_ENCODERS_DEFINED > 2)
     {
