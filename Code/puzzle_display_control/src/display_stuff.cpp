@@ -53,9 +53,6 @@ tsPoint_t letter;
 tsPoint_t calibrated;
 tsPoint_t midpoint;
 
-int pos_array[6][4][2];
-
-
 static int initialized_game =0;
 //static int init_rect = 0;
 
@@ -80,17 +77,8 @@ void init_rect()
 
     for(i = 0; i<6; i++)
     {
-        for(int j = 0; j<4; j++)
-        {
-            pos_array[i][j][0] = j*REC_SIZE_X;
-            pos_array[i][j][1] = i*REC_SIZE_Y;
-        }
-    }
-
-    for(i = 0; i<6; i++)
-    {
-        rectangles[i].tr_corner.x = pos_array[0][0][0];
-        rectangles[i].tr_corner.y =  pos_array[0][0][1];
+        rectangles[i].tr_corner.x = 0;
+        rectangles[i].tr_corner.y =  0;
         rectangles[i].section = 0;
         rectangles[i].color = RA8875_BLUE;
     }
@@ -174,6 +162,10 @@ bool rectangles_game(tsPoint_t touch_raw)
 
         // remove current position of the selected rectangle
         local_tft.fillRect(x, y, REC_SIZE_X, REC_SIZE_Y, BACKGROUND_COLOR);
+        if(rec_section >= 18)
+        {
+            draw_placeholders();
+        }
 
         Serial.print(sign);
 
