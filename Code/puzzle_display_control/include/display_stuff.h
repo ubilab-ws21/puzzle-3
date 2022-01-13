@@ -12,8 +12,10 @@ struct rect{
 
 
 void init_rect(void);
+void draw_placeholders(void);
 bool rectangles_game(tsPoint_t touch_raw);
 int get_section(int x, int y);
+void section_to_xy(int section, int* x, int* y);
 bool is_section_with_letter(int section);
 char get_letter(int section);
 bool isNewRecToCome(int rect_selected_num);
