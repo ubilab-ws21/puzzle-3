@@ -50,4 +50,8 @@ The screen shows a word puzzle, where it is not clear yet how it looks exactly. 
 After the puzzle was solved, the screen changes again and shows the code which is needed for the next puzzle of the next group (code for opening the door via light bulbs)
 
 ## Documents
-The datasheets can be found in the datasheets directory 
+The datasheets can be found in the datasheets directory
+
+## Notes
+The board with the ICs, placed on the bottom of the radio case inside, should be 9cm x 13cm long.
+Software game: We only have one rectangle. By placing the blue rectangle on a letter and touching it, the rectangle and the letter will go to the next free location in the password space.
