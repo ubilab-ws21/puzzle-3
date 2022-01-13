@@ -653,6 +653,8 @@ bool sliding_bars(int encoder_num)
     Serial.print(": ");
     Serial.print(encoder_value);
 
+    local_tft.graphicsMode();
+
     local_tft.fillTriangle(MIN_X_VAL, max_Y_val, bar_fill_value_x, max_Y_val, bar_fill_value_x, bar_fill_value_y, color);
 
     int solved_values[3] = {10,-4,-1};
