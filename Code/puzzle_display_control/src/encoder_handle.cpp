@@ -25,7 +25,7 @@ void init_encoder()
     }
     if(NUM_ENCODERS_DEFINED > 2)
     {
-        encoder[2]._encoder.attachSingleEdge(25, 26);
+        encoder[2]._encoder.attachSingleEdge(26, 25);
     }
 		
     int i;
