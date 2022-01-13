@@ -59,14 +59,12 @@ void setup()
     */
     mp3Player.EQ(DFPLAYER_EQ_NORMAL);
     // Volume 1 to 30
-    mp3Player.volume(10);
+    mp3Player.volume(30);
 
     init_display();
-
     init_encoder();
 
-    state = 0;
-    
+    state = 0;    
 }
 
 /**************************************************************************/
@@ -86,8 +84,7 @@ tsPoint_t raw;
             if(!flagset)
             {
                 first_screen();
-                flagset = true;
-                
+                flagset = true;   
             }
             encoder_triggered = check_encoder();
             if (encoder_triggered) //if(antenna applied)
@@ -98,6 +95,7 @@ tsPoint_t raw;
             break;
         case 1:
             if(!flagset){
+                Serial.println("case 1");
                 mp3Player.loopFolder(ESA);
                 fill_display(BACKGROUND_COLOR);
                 sliding_bars(1);
