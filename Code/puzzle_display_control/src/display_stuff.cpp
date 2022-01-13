@@ -38,6 +38,12 @@
 unsigned long last_touch_time;
 
 
+unsigned long random_number_0_6;
+
+char letters[15];
+
+
+
 enum
 {
     last_action_none = 0,
@@ -70,8 +76,11 @@ bool section0free = 1;
 void init_rect()
 {
 
+    
     static tsMatrix_t local_matrix = gettsMatrix();
     static Adafruit_RA8875 local_tft = gettft();
+
+    local_tft.fillScreen(BACKGROUND_COLOR);
 
     int i;
 
@@ -82,8 +91,6 @@ void init_rect()
         rectangles[i].section = 0;
         rectangles[i].color = RA8875_BLUE;
     }
-
-
 
     calibrateTSPoint(&rectangles[0].tr_corner_cal, &rectangles[0].tr_corner, &local_matrix);
 
@@ -97,7 +104,7 @@ void init_rect()
 
     selected_rect = rectangles[0];
 
-    local_tft.fillScreen(BACKGROUND_COLOR);
+    
 
         // initialize letter placeholder rectangles: Here the Letter rectangles must be placed in order to solve the puzzle.
     int x, y;
@@ -142,12 +149,12 @@ bool rectangles_game(tsPoint_t touch_raw)
         Serial.print(last_action);
         // the last action matches the current encode number. 
         int cur_encoder_num = last_action;
-        if(color == RA8875_RED)
+        /*if(color == RA8875_RED)
         {
             encoder_set_value(1, 0);
             last_action = last_action_none;
             return 0;
-        }
+        }*/
         /*Serial.print("selected rect: ");
         Serial.println(rect_selected_num);
         Serial.println(x);
@@ -182,6 +189,7 @@ bool rectangles_game(tsPoint_t touch_raw)
                 if(((rec_section+1) % NUM_SECTIONS_X) && (rec_section+1 < NUM_SECTIONS) &&
                 (!position_occupied(rec_section + 1)))
                 {
+ 
                     Serial.println("one to the rightbefore: ");
                     Serial.println(x);
                     x += REC_SIZE_X;
@@ -311,6 +319,59 @@ bool rectangles_game(tsPoint_t touch_raw)
             section0free = false;
         last_action = last_action_none;
     }
+    else if(last_action == last_action_encoder3)
+    {
+        
+
+        random_letter_generation();
+        int section; 
+        int letter_bg_color;
+        int char_x, char_y;
+        bool valid_section;
+        for(section=0; section<24; section++)
+        {
+            valid_section = is_section_with_letter(section);
+            if(valid_section)
+            {
+                char mychar = get_letter(section);
+                int rect_num = who_is_here(section);
+                if (rect_num == -1)
+                {
+                    letter_bg_color = BACKGROUND_COLOR;
+                }
+                else
+                {
+                    letter_bg_color = rectangles[rect_num].color;
+                }
+            section_to_xy(section, &char_x, &char_y);
+            local_tft.drawChar(char_x+40, char_y+40, mychar, RA8875_BLACK, letter_bg_color , 5);
+            }
+        }
+        delay(1000);
+        for(section=0; section<24; section++)
+        {   
+            valid_section = is_section_with_letter(section);
+            if(valid_section)
+            {
+                char mychar = get_letter(section);
+                int rect_num = who_is_here(section);
+                int letter_color; 
+                if (rect_num == -1)
+                {
+                    letter_color = BACKGROUND_COLOR;
+                    letter_bg_color = BACKGROUND_COLOR;
+                }
+                else
+                {
+                    letter_color = rectangles[rect_num].color;
+                    letter_bg_color = rectangles[rect_num].color;
+                }
+                
+                section_to_xy(section, &char_x, &char_y);
+                local_tft.drawChar(char_x + 40, char_y + 40, mychar, letter_color, letter_bg_color, 5);
+            }
+        }
+    }
     else if(last_action == last_action_touch)
     {
         tsPoint_t calibrated;
@@ -400,38 +461,6 @@ bool isNewRecToCome(int rect_selected_num)
     }
     return true;
 }
-/*
-rect select_rectangle(int num)
-{
-    switch(num)
-    {
-        case 1: 
-            Serial.print("in fun seöect. rec 1:");
-            Serial.print(rectangle2.tr_corner.x);
-            return rectangle1;
-            break;
-        case 2: 
-        Serial.print("in fun seöect. rec 2:");
-            Serial.print(rectangle2.tr_corner.x);
-            return rectangle2;
-            break;
-        case 3:
-            return rectangle3;
-            break;
-        case 4: 
-            return rectangle4;
-            break;
-        case 5: 
-            return rectangle5;
-            break;
-        case 6:
-            return rectangle6;
-            break;
-        default:
-            *rectangle = rectangle1;
-            break;
-    }
-}*/
 
 int get_section(int x, int y)
 {
@@ -450,69 +479,63 @@ void section_to_xy(int section, int* x, int* y)
 
 bool is_section_with_letter(int section)
 {
-    if((section+1) % 4)
+    int valid_sections[12] = {0, 2, 3, 5, 7, 8, 9, 11, 12, 13, 15, 17}; 
+    for(int i = 0; i<12; i++)
     {
-        return false;
+        if(valid_sections[i] == section)
+            return true;
     }
-    else
+    return false;
+}
+
+void random_letter_generation()
+{
+    static int function_called_count = 0;
+
+    Serial.println("counter = " +  String(function_called_count));
+    static int random_start;
+    char manual[7] = "MANUAL";
+    if(!(function_called_count%4))
     {
-        return true;
+        function_called_count = 0;
+        random_start = rand() % 6;
+        Serial.println("random start: " + String(random_start));
+        for(int i = 0; i<6; i++)
+        {
+            letters[i] = manual[(random_start + i + 6) % 6];
+            Serial.println(letters[i]);
+        }
+        for(int i = 6; i<18; i++)
+        {
+            letters[i] = 'A' + (rand() % 26);
+            Serial.println(letters[i]);
+        }
     }
+    function_called_count++;
+    
 }
 
 char get_letter(int section)
 {
-    if(section == 3)
-        return 'A';
-    else if(section == 7)
-        return 'U';
-    else if(section == 11)
-    {
-        return 'M';
-    }
-    else
-        return 'O';
+    return letters[section];
 }
 
-/*
-void save_rect_data(int rect_num, tsPoint_t point, int color)
+int who_is_here(int section)
 {
-    switch(rect_num)
+    int i;
+    for(i = 0; i<num_rect_visible; i++)
     {
-        case 1: 
-            rectangle1.tr_corner = point;
-            rectangle1.color = color;
-            break;
-        case 2: 
-            rectangle2.tr_corner = point;
-            rectangle2.color = color;
-            break;
-        case 3:
-            rectangle3.tr_corner = point;
-            rectangle3.color = color;
-            break;
-        case 4: 
-            rectangle4.tr_corner = point;
-            rectangle4.color = color;
-            break;
-        case 5: 
-            rectangle5.tr_corner = point;
-            rectangle5.color = color;
-            break;
-        case 6:
-            rectangle6.tr_corner = point;
-            rectangle6.color = color;
-            break;
-        default:
-            *rectangle = rectangle1;
-            break;
+        if(rectangles[i].section == section)
+            {
+                Serial.println("rectange " + String(i) + " is in section " + String(section));
+                return i; 
+            }
     }
-}*/
-
+    return -1;
+}
 int position_occupied(int section)
 {
     int i; 
-    rect iterate_rect;
     Serial.println(rect_selected_num);
     for(i = 0; i<num_rect_visible; i++)
     {
@@ -529,7 +552,7 @@ int position_occupied(int section)
     Serial.println("next position not occupied");
     return 0;
 }
-
+/*
 void dissapearing_letters()
 {
     static tsMatrix_t local_matrix = gettsMatrix();
@@ -590,7 +613,7 @@ void dissapearing_letters()
         local_tft.fillCircle(calibrated.x, calibrated.y, 3, RA8875_BLACK);
     }
 }
-
+*/
 bool sliding_bars(int encoder_num)
 {
     static Adafruit_RA8875 local_tft = gettft();
@@ -621,7 +644,7 @@ bool sliding_bars(int encoder_num)
     
 
     /* Render some text! */
-    char string[15] = "Ferdis Radio! ";
+    char string[16] = "Ferdi's Radio! ";
     local_tft.textTransparent(RA8875_BLUE);
     local_tft.textEnlarge(2.5);
     local_tft.textWrite(string);
@@ -631,8 +654,6 @@ bool sliding_bars(int encoder_num)
     local_tft.drawTriangle(MIN_X_VAL, max_Y_val, MAX_X_VAL, max_Y_val, MAX_X_VAL, min_Y_val, color);
 
     local_tft.textMode();
-
-    char string1[4] = "-12";
 
     char string_buffer[4];
     for(int i = 0; i<=24; i++)
@@ -660,11 +681,10 @@ bool sliding_bars(int encoder_num)
     int i;
     for(i = 1; i<=NUM_ENCODERS_DEFINED; i++)
     {
-        Serial.print(solved_values[i]);
+        Serial.print(solved_values[i-1]);
         Serial.print(encoder_get_value(i));
         if(encoder_get_value(i) != solved_values[i-1])
         {
-            // not solved
             return 0;
         }      
     }

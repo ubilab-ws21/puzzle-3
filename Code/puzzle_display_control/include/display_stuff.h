@@ -10,17 +10,16 @@ struct rect{
     int section; 
 };
 
-
 void init_rect(void);
 void draw_placeholders(void);
 bool rectangles_game(tsPoint_t touch_raw);
 int get_section(int x, int y);
 void section_to_xy(int section, int* x, int* y);
 bool is_section_with_letter(int section);
+void random_letter_generation(void);
 char get_letter(int section);
 bool isNewRecToCome(int rect_selected_num);
-rect select_rectangle(int num);
-void save_rect_data(int rect_num, tsPoint_t point, int color);
+int who_is_here(int section);
 int position_occupied(int section);
 void dissapearing_letters(void);
 bool sliding_bars(int encoder_num);
