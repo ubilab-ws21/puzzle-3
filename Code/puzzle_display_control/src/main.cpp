@@ -59,22 +59,11 @@ void setup()
     */
     mp3Player.EQ(DFPLAYER_EQ_NORMAL);
     // Volume 1 to 30
-    mp3Player.volume(20);
+    mp3Player.volume(10);
 
     init_display();
 
-  //tft.setFont(&FreeSerifBoldItalic9pt7b);
     init_encoder();
-
-    
-
-//#ifndef LETTER_GAME
-    sliding_bars(1);
-    sliding_bars(2);
-    sliding_bars(3);
-//#else
- //   init_rect();
-//#endif
 
     state = 0;
     
@@ -88,9 +77,6 @@ int encoder_triggered = 0;
 void loop()
 {
 tsPoint_t raw;
-
-#ifdef LETTER_GAME
-    //dissapearing_letters();
     
     while(1)
     {
@@ -156,17 +142,4 @@ tsPoint_t raw;
                 break;
         }
     }
-#else
-    while(1)
-    {
-        encoder_triggered = check_encoder();
-        if (encoder_triggered)
-        {
-            break;
-        }
-    }
-    sliding_bars(encoder_triggered);
-#endif
-    
-
 }
