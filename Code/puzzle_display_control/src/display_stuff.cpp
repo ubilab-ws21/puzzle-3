@@ -204,7 +204,7 @@ bool rectangles_game(tsPoint_t touch_raw)
 
                     //for now: puzzle is solved now!
                     Serial.print("puzzle solved");
-                    return 1;
+                    //return 1;
 
                     
                     Serial.print("num rect visinle");
@@ -631,17 +631,15 @@ bool sliding_bars(int encoder_num)
     local_tft.drawTriangle(MIN_X_VAL, max_Y_val, MAX_X_VAL, max_Y_val, MAX_X_VAL, min_Y_val, color);
 
     local_tft.textMode();
-    local_tft.textSetCursor(MIN_X_VAL-3, max_Y_val+5);
-    
-    char string1[4] = "-12";
-    local_tft.textTransparent(RA8875_BLUE);
-    local_tft.textEnlarge(0);
-    local_tft.textWrite(string1);
 
-    local_tft.textSetCursor(MAX_X_VAL-3, max_Y_val+5);
-    
-    char string2[4] = "+12";
-    local_tft.textWrite(string2);
+    char string1[4] = "-12";
+
+    char string_buffer[4];
+    for(int i = 0; i<=24; i++)
+    {
+        itoa(i-12, string_buffer, 10);
+        draw_numbers(string_buffer, MIN_X_VAL + ((MAX_X_VAL - MIN_X_VAL) / 24)*i, max_Y_val);
+    }
 
     int encoder_value = encoder_get_value(encoder_num);
 
@@ -674,6 +672,17 @@ bool sliding_bars(int encoder_num)
     return 1;
 }
 
+void draw_numbers(const char* string, int cursor_x, int cursor_y)
+{
+
+    static Adafruit_RA8875 local_tft = gettft();
+
+    local_tft.textSetCursor(cursor_x-8, cursor_y+5);
+
+    local_tft.textTransparent(RA8875_BLUE);
+    local_tft.textEnlarge(0);
+    local_tft.textWrite(string);
+}
 int convert_encoder2display_x(int encoder_value)
 {
     int return_val = MEAN_X_VAL;
