@@ -51,14 +51,16 @@ int check_encoder()
     {
         if (encoder[i].encoder_value !=  encoder[i]._encoder.getCount())
         {
-        if(encoder[i]._encoder.getCount() > -12 && encoder[i]._encoder.getCount() < 12)
-        {
-            encoder[i].encoder_value = encoder[i]._encoder.getCount();
-            Serial.println("Encoder count 1 = " + String((int32_t)encoder[i].encoder_value));
-            return (i+1);
-        }
-        else
-            encoder[i]._encoder.setCount(encoder[i].encoder_value);
+            if(encoder[i]._encoder.getCount() > -12 && encoder[i]._encoder.getCount() < 12)
+            {
+                encoder[i].encoder_value = encoder[i]._encoder.getCount();
+                Serial.println("Encoder no " + String(i) + ", count  = " + String((int32_t)encoder[i].encoder_value));
+            }
+            else
+            {
+                encoder[i]._encoder.setCount(encoder[i].encoder_value);
+            }
+            return (i+1);       
         }
     }
     return 0;
@@ -74,9 +76,14 @@ int encoder_get_value(int encoder_num)
 
 void encoder_set_value(int encoder_num, int value)
 {
+    Serial.print("set encoder ");
+    Serial.print(encoder_num);
+    Serial.print(" to value ");
     if(encoder_num <= NUM_ENCODERS_DEFINED && encoder_num > 0)
     {
+        
+        Serial.print(value);
         encoder[encoder_num-1].encoder_value = value; 
-        encoder[encoder_num-1]._encoder.setCount(encoder[encoder_num].encoder_value);
+        encoder[encoder_num-1]._encoder.setCount(encoder[encoder_num-1].encoder_value);
     }
 }
