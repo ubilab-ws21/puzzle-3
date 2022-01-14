@@ -49,6 +49,72 @@ In the recording, the former control room worker repeatedly says that he has for
 The screen shows a word puzzle, where it is not clear yet how it looks exactly. From the voice from the radio guy it becomes clear how to solve the puzzle.
 After the puzzle was solved, the screen changes again and shows the code which is needed for the next puzzle of the next group (code for opening the door via light bulbs)
 
+## MQTT Topics/Specification
+
+Topic: 3/antenna
+
+Messages:
+
+- Start:
+
+ 	Operator: start the radio-puzzle
+
+ 	Radio: receive to start the puzzle
+
+- PlugStatus:
+
+	Radio: update if antenna is plugged in
+
+	Operator: receive updates on the antenna
+
+- Orientation:
+
+	Radio: update if antenna is set up in the correct direction. The first puzzle is signaled as solved
+
+	Operator: receive updates on the antenna orientation
+
+Topic: 3/map
+
+Messages:
+
+- Start:
+
+ 	Operator: start the map-puzzle
+
+ 	Radio: receive to start the next puzzle
+
+- Knob1:
+
+	Radio: update if the the first knob/color reaches/leaves the correct postion
+	
+	Operator: receive updates on the first knob
+
+- Knob2:
+
+	Radio: update if the the second knob/color reaches/leaves the correct postion
+
+	Operator: receive updates on the second knob
+
+- Knob3:
+
+	Radio: update if the the third knob/color reaches/leaves the correct postion
+
+	Operator: receive updates on the third knob
+
+Topic: 3/touchgame
+
+- Start:
+
+	Operator: start the last puzzle
+
+	Radio: receive to start the last puzzle
+	
+- Finished
+
+	Radio: update if the puzzle is finished
+	
+	Operator: receive updates on the puzzle status
+
 ## Documents
 The datasheets can be found in the datasheets directory
 
