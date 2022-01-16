@@ -40,7 +40,7 @@ unsigned long last_touch_time;
 
 unsigned long random_number_0_6;
 
-char letters[15];
+char letters[18];
 
 int orig_valid_sections[18] = {1,0,1,1,0,1,0,1,1,1,0,1,1,1,0,1,0,1};
 int valid_sections[18] = {};
@@ -125,12 +125,12 @@ void init_rect()
     
     free_placeholer_num = 0;
 
-    random_letter_generation(true);
-
     for(i = 0; i<18; i++)
     {
         valid_sections[i] = orig_valid_sections[i];
     }
+
+    random_letter_generation(true);   
 
 }
 
@@ -526,16 +526,29 @@ void random_letter_generation(bool init)
         function_called_count = 0;
         random_start = rand() % 6;
         Serial.println("random start: " + String(random_start));
-        for(int i = 0; i<6; i++)
-        {
-            letters[i] = manual[(random_start + i + 6) % 6];
-            Serial.println(letters[i]);
-        }
-        for(int i = 6; i<18; i++)
+
+        for(int i = 0; i<18; i++)
         {
             letters[i] = 'A' + (rand() % 26);
-            Serial.println(letters[i]);
         }
+        int counter = 0;
+        for(int i = 0; i<18; i+=2)
+        {
+            while(!is_section_with_letter(i))
+            {
+                i++;
+            }
+            Serial.println("now: " + String((random_start + counter + 6) % 6));
+            letters[i] = manual[(random_start + counter + 6) % 6];
+            counter++;
+            if(counter == 6)
+                break;
+        }
+    }
+
+    for(int i = 0; i<18; i++)
+    {
+        Serial.print(letters[i]);
     }
     function_called_count++;
 }
