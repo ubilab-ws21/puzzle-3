@@ -134,7 +134,13 @@ tsPoint_t raw;
             break;
 
             case 3:
-                final_screen();
+                if(!flagset){
+                    mp3Player.loopFolder(Ferdi);
+                    
+                    final_screen();
+                    flagset = true;
+                }
+                
                 //whitescreen;
                 //pause_audio;
                 break;
