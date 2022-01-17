@@ -109,6 +109,7 @@ void init_rect()
 
     // initialize letter placeholder rectangles: Here the Letter rectangles must be placed in order to solve the puzzle.
     int x, y;
+    char password[7] = "PASSWD";
     for(i = 0; i<6; i++)
     {
         section_to_xy(18+i, &x, &y);
@@ -119,10 +120,15 @@ void init_rect()
         letter_place[i].section = 18+i;
         letter_place[i].color = RA8875_BLUE;
 
+        /*
         local_tft.drawRect(letter_place[i].tr_corner.x+10, letter_place[i].tr_corner.y, REC_SIZE_X-15, REC_SIZE_Y-30, letter_place[i].color);
+        */
+        local_tft.fillRect(letter_place[i].tr_corner.x, letter_place[i].tr_corner.y, REC_SIZE_X, REC_SIZE_Y-1, RA8875_YELLOW);
+        local_tft.drawRect(letter_place[i].tr_corner.x, letter_place[i].tr_corner.y, REC_SIZE_X, REC_SIZE_Y-1, letter_place[i].color);
+        local_tft.drawChar(letter_place[i].tr_corner.x+40, letter_place[i].tr_corner.y+40, password[i], RA8875_RED, RA8875_YELLOW, 8);
         placeholder_letters[i] = {};
     }
-
+    /*
     local_tft.drawFastHLine(letter_place[0].tr_corner.x+10, letter_place[0].tr_corner.y, 6*REC_SIZE_X-15, RA8875_BLUE);
     local_tft.drawFastHLine(letter_place[0].tr_corner.x+10, letter_place[0].tr_corner.y+REC_SIZE_Y-30, 6*REC_SIZE_X-15, RA8875_BLUE);
     local_tft.textMode();
@@ -130,7 +136,7 @@ void init_rect()
     local_tft.textSetCursor(letter_place[2].tr_corner.x+25, letter_place[0].tr_corner.y+REC_SIZE_Y-35);
     local_tft.textEnlarge(1);
     local_tft.textWrite("Password");
-    local_tft.graphicsMode();
+    local_tft.graphicsMode();*/
     
     free_placeholer_num = 0;
 
@@ -147,10 +153,29 @@ void draw_placeholders()
 {
     static Adafruit_RA8875 local_tft = gettft();
 
+    char password[7] = "PASSWD";
+
     for(int i = 0; i<6; i++)
     {
-        local_tft.drawRect(letter_place[i].tr_corner.x+10, letter_place[i].tr_corner.y+10, REC_SIZE_X-10, REC_SIZE_Y-10, letter_place[i].color);
+        local_tft.fillRect(letter_place[i].tr_corner.x, letter_place[i].tr_corner.y, REC_SIZE_X, REC_SIZE_Y-1, RA8875_YELLOW);
+        local_tft.drawRect(letter_place[i].tr_corner.x, letter_place[i].tr_corner.y, REC_SIZE_X, REC_SIZE_Y-1, letter_place[i].color);
+        //local_tft.drawChar(letter_place[i].tr_corner.x+40, letter_place[i].tr_corner.y+40, password[i], RA8875_RED, RA8875_YELLOW, 8);
+        draw_placeholder_letters();
     }
+    /*
+
+    for(int i = 0; i<6; i++)
+    {
+        local_tft.drawRect(letter_place[i].tr_corner.x+10, letter_place[i].tr_corner.y+10, REC_SIZE_X-15, REC_SIZE_Y-30, letter_place[i].color);
+    }
+    local_tft.drawFastHLine(letter_place[0].tr_corner.x+10, letter_place[0].tr_corner.y, 6*REC_SIZE_X-15, RA8875_BLUE);
+    local_tft.drawFastHLine(letter_place[0].tr_corner.x+10, letter_place[0].tr_corner.y+REC_SIZE_Y-30, 6*REC_SIZE_X-15, RA8875_BLUE);
+    local_tft.textMode();
+    local_tft.textTransparent(RA8875_RED);
+    local_tft.textSetCursor(letter_place[2].tr_corner.x+25, letter_place[0].tr_corner.y+REC_SIZE_Y-35);
+    local_tft.textEnlarge(1);
+    local_tft.textWrite("Password");
+    local_tft.graphicsMode();*/
 }
 
 bool rectangles_game(tsPoint_t touch_raw)
@@ -428,7 +453,7 @@ bool rectangles_game(tsPoint_t touch_raw)
                     rectangles[rect_selected_num].color = color;
                     rectangles[rect_selected_num].section = free_placeholer_num+18;
 
-                    local_tft.fillRect(rectangles[rect_selected_num].tr_corner.x, rectangles[rect_selected_num].tr_corner.y, REC_SIZE_X, REC_SIZE_Y, rectangles[rect_selected_num].color);
+                    local_tft.fillRect(rectangles[rect_selected_num].tr_corner.x+10, rectangles[rect_selected_num].tr_corner.y, REC_SIZE_X-15, REC_SIZE_Y-30, rectangles[rect_selected_num].color);
                     
                     if(is_section_with_letter(section)) //&& color == RA8875_RED)
                     {
@@ -584,7 +609,7 @@ void draw_placeholder_letters()
         if(rect_num >= 0)
             bg_color = rectangles[rect_num].color;
         else 
-            bg_color = BACKGROUND_COLOR;
+            bg_color = RA8875_YELLOW;
         local_tft.drawChar(placeholder_x + 40, placeholder_y +40, placeholder_letters[i], RA8875_BLACK, bg_color, 5);
     }
 }
