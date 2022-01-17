@@ -66,9 +66,6 @@ tsPoint_t letter;
 tsPoint_t calibrated;
 tsPoint_t midpoint;
 
-static int initialized_game =0;
-//static int init_rect = 0;
-
 int num_rect_visible;
 int rect_selected_num;
 
@@ -184,14 +181,10 @@ void draw_placeholders()
 {
     static Adafruit_RA8875 local_tft = gettft();
 
-    char password[7] = "PASSWD";
-
     for(int i = 0; i<6; i++)
     {
         local_tft.fillRect(letter_place[i].tr_corner.x, letter_place[i].tr_corner.y, REC_SIZE_X, REC_SIZE_Y-1, RA8875_YELLOW);
         local_tft.drawRect(letter_place[i].tr_corner.x, letter_place[i].tr_corner.y, REC_SIZE_X, REC_SIZE_Y-1, letter_place[i].color);
-        //local_tft.drawChar(letter_place[i].tr_corner.x+40, letter_place[i].tr_corner.y+40, password[i], RA8875_RED, RA8875_YELLOW, 8);
-        //draw_placeholder_letters();
     }
 }
 
@@ -367,7 +360,6 @@ bool rectangles_game(tsPoint_t touch_raw)
         }
 
         encoder_set_value(cur_encoder_num, 0);
-        //encoder_set_value(2, 0);
 
         local_tft.fillRect(rectangles[rect_selected_num].tr_corner.x, rectangles[rect_selected_num].tr_corner.y, REC_SIZE_X, REC_SIZE_Y, rectangles[rect_selected_num].color);
         if(rectangles[rect_selected_num].section == 0)
@@ -549,7 +541,6 @@ void section_to_xy(int section, int* x, int* y)
 {
     int section_y = section / NUM_SECTIONS_X;
     *y = section_y * REC_SIZE_Y + REC_MIN_Y;
-
 
     *x = (section - (section_y * NUM_SECTIONS_X)) * REC_SIZE_X;
 }
@@ -974,6 +965,4 @@ void final_screen()
         local_tft.drawChar(x+30, y+30, password[i], RA8875_RED, RA8875_BLUE, 10);
         placeholder_letters[i] = {};
     }
-
-
 }
