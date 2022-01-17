@@ -12,11 +12,12 @@ struct rect{
 
 void init_rect(void);
 void draw_placeholders(void);
+void draw_showbutton(int counter);
 bool rectangles_game(tsPoint_t touch_raw);
 int get_section(int x, int y);
 void section_to_xy(int section, int* x, int* y);
 bool is_section_with_letter(int section);
-void random_letter_generation(bool init);
+bool random_letter_generation(bool init);
 char get_letter(int section);
 void draw_placeholder_letters(void);
 void shift_letter(int cur_section);
