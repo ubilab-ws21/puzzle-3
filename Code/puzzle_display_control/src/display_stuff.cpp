@@ -80,6 +80,8 @@ rect letter_place[6];
 
 bool section0free = 1;
 
+static int function_called_count = 0;
+
 void init_rect()
 {
 
@@ -154,27 +156,9 @@ void init_rect()
         local_tft.drawRect(letter_place[i].tr_corner.x, letter_place[i].tr_corner.y, REC_SIZE_X, REC_SIZE_Y-1, letter_place[i].color);
     }
 
-    local_tft.fillRect(0, 0, REC_SIZE_X*2, REC_MIN_Y, RA8875_GREEN);
-    local_tft.drawRect(0, 0, REC_SIZE_X*2, REC_MIN_Y, 0x07D0);
-    local_tft.textMode();
-    local_tft.textTransparent(RA8875_RED);
-    local_tft.textEnlarge(1);
-    local_tft.textSetCursor(80, 10);
-    local_tft.textWrite("SHOW");
-    local_tft.graphicsMode();
+    draw_showbutton(0);
 
     local_tft.fillRect(rectangles[0].tr_corner.x, rectangles[0].tr_corner.y, REC_SIZE_X, REC_SIZE_Y, rectangles[0].color);
-
-
-    /*
-    local_tft.drawFastHLine(letter_place[0].tr_corner.x+10, letter_place[0].tr_corner.y, 6*REC_SIZE_X-15, RA8875_BLUE);
-    local_tft.drawFastHLine(letter_place[0].tr_corner.x+10, letter_place[0].tr_corner.y+REC_SIZE_Y-30, 6*REC_SIZE_X-15, RA8875_BLUE);
-    local_tft.textMode();
-    local_tft.textTransparent(RA8875_RED);
-    local_tft.textSetCursor(letter_place[2].tr_corner.x+25, letter_place[0].tr_corner.y+REC_SIZE_Y-35);
-    local_tft.textEnlarge(1);
-    local_tft.textWrite("Password");
-    local_tft.graphicsMode();*/
     
     free_placeholer_num = 0;
 
@@ -200,20 +184,26 @@ void draw_placeholders()
         //local_tft.drawChar(letter_place[i].tr_corner.x+40, letter_place[i].tr_corner.y+40, password[i], RA8875_RED, RA8875_YELLOW, 8);
         //draw_placeholder_letters();
     }
-    /*
+}
 
-    for(int i = 0; i<6; i++)
-    {
-        local_tft.drawRect(letter_place[i].tr_corner.x+10, letter_place[i].tr_corner.y+10, REC_SIZE_X-15, REC_SIZE_Y-30, letter_place[i].color);
-    }
-    local_tft.drawFastHLine(letter_place[0].tr_corner.x+10, letter_place[0].tr_corner.y, 6*REC_SIZE_X-15, RA8875_BLUE);
-    local_tft.drawFastHLine(letter_place[0].tr_corner.x+10, letter_place[0].tr_corner.y+REC_SIZE_Y-30, 6*REC_SIZE_X-15, RA8875_BLUE);
+void draw_showbutton(int counter)
+{
+    static Adafruit_RA8875 local_tft = gettft();
+
+    char string_buffer[3];;
+
+    itoa(counter, string_buffer, 10);
+
+    local_tft.fillRect(0, 0, REC_SIZE_X*2, REC_MIN_Y, RA8875_GREEN);
+    local_tft.drawRect(0, 0, REC_SIZE_X*2, REC_MIN_Y, 0x07D0);
     local_tft.textMode();
     local_tft.textTransparent(RA8875_RED);
-    local_tft.textSetCursor(letter_place[2].tr_corner.x+25, letter_place[0].tr_corner.y+REC_SIZE_Y-35);
     local_tft.textEnlarge(1);
-    local_tft.textWrite("Password");
-    local_tft.graphicsMode();*/
+    local_tft.textSetCursor(80, 10);
+    local_tft.textWrite(string_buffer);
+    local_tft.textSetCursor(110, 10);
+    local_tft.textWrite("/ 4");
+    local_tft.graphicsMode();
 }
 
 bool rectangles_game(tsPoint_t touch_raw)
@@ -412,55 +402,56 @@ bool rectangles_game(tsPoint_t touch_raw)
         if(calibrated.y < REC_MIN_Y && calibrated.x < 2*REC_SIZE_X)
         {
             //show letters. 
-            random_letter_generation(false);
-            int section; 
-            int letter_bg_color;
-            int char_x, char_y;
-            bool valid_section;
-            for(section=0; section<18; section++)
+            if(random_letter_generation(false))
             {
-                valid_section = is_section_with_letter(section);
-                if(valid_section)
+                int section; 
+                int letter_bg_color;
+                int char_x, char_y;
+                bool valid_section;
+                for(section=0; section<18; section++)
                 {
-                    char mychar = get_letter(section);
-                    int rect_num = who_is_here(section);
-                    if (rect_num == -1)
+                    valid_section = is_section_with_letter(section);
+                    if(valid_section)
                     {
-                        letter_bg_color = BACKGROUND_COLOR;
-                    }
-                    else
-                    {
-                        letter_bg_color = rectangles[rect_num].color;
-                    }
-                section_to_xy(section, &char_x, &char_y);
-                local_tft.drawChar(char_x+50, char_y+50, mychar, RA8875_BLACK, letter_bg_color , 5);
-                }
-            }
-            delay(1000);
-            for(section=0; section<18; section++)
-            {   
-                valid_section = is_section_with_letter(section);
-                if(valid_section)
-                {
-                    char mychar = get_letter(section);
-                    int rect_num = who_is_here(section);
-                    int letter_color; 
-                    if (rect_num == -1)
-                    {
-                        letter_color = BACKGROUND_COLOR;
-                        letter_bg_color = BACKGROUND_COLOR;
-                    }
-                    else
-                    {
-                        letter_color = rectangles[rect_num].color;
-                        letter_bg_color = rectangles[rect_num].color;
-                    }
-                    
+                        char mychar = get_letter(section);
+                        int rect_num = who_is_here(section);
+                        if (rect_num == -1)
+                        {
+                            letter_bg_color = BACKGROUND_COLOR;
+                        }
+                        else
+                        {
+                            letter_bg_color = rectangles[rect_num].color;
+                        }
                     section_to_xy(section, &char_x, &char_y);
-                    local_tft.drawChar(char_x + 50, char_y + 50, mychar, letter_color, letter_bg_color, 5);
+                    local_tft.drawChar(char_x+50, char_y+50, mychar, RA8875_BLACK, letter_bg_color , 5);
+                    }
+                }
+                delay(1000);
+                for(section=0; section<18; section++)
+                {   
+                    valid_section = is_section_with_letter(section);
+                    if(valid_section)
+                    {
+                        char mychar = get_letter(section);
+                        int rect_num = who_is_here(section);
+                        int letter_color; 
+                        if (rect_num == -1)
+                        {
+                            letter_color = BACKGROUND_COLOR;
+                            letter_bg_color = BACKGROUND_COLOR;
+                        }
+                        else
+                        {
+                            letter_color = rectangles[rect_num].color;
+                            letter_bg_color = rectangles[rect_num].color;
+                        }
+                        
+                        section_to_xy(section, &char_x, &char_y);
+                        local_tft.drawChar(char_x + 50, char_y + 50, mychar, letter_color, letter_bg_color, 5);
+                    }
                 }
             }
-
         }
         else
         {
@@ -510,7 +501,7 @@ bool rectangles_game(tsPoint_t touch_raw)
         }
         last_action = last_action_none;
     }
-    if(free_placeholer_num == 6)
+    if(free_placeholer_num == 6 || function_called_count > 4)
     {
         if(is_rect_puzzle_solved())
         {
@@ -584,21 +575,29 @@ bool is_section_with_letter(int section)
     return false;
 }
 
-void random_letter_generation(bool init)
+bool random_letter_generation(bool init)
 {
-    static int function_called_count = 0;
-
     if(init)
     {
-        function_called_count=0;
+        function_called_count=0;    
+    }
+    else
+    {
+        function_called_count++;
+        draw_showbutton(function_called_count);
+        if(function_called_count > 4)
+        {
+            return false; 
+        }
     }
 
     Serial.println("counter = " +  String(function_called_count));
     static int random_start;
     char manual[7] = "MANUAL";
-    if(!(function_called_count%4))
+    if(!(function_called_count))
     {
-        function_called_count = 0;
+
+        //function_called_count = 0;
         random_start = rand() % 6;
         Serial.println("random start: " + String(random_start));
 
@@ -625,7 +624,9 @@ void random_letter_generation(bool init)
     {
         Serial.print(letters[i]);
     }
-    function_called_count++;
+    
+    return true;
+    
 }
 
 char get_letter(int section)
