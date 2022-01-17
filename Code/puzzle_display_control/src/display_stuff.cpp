@@ -24,8 +24,9 @@
 
 #define X_Y_RATIO double(MAX_Y_VAL_1-MIN_Y_VAL_1)/double(MAX_X_VAL-MIN_X_VAL)
 
+#define REC_MIN_Y 60
 #define REC_SIZE_X 133
-#define REC_SIZE_Y 120
+#define REC_SIZE_Y 105
 
 #define NUM_SECTIONS_X 6
 #define NUM_SECTIONS_Y 4
@@ -91,7 +92,7 @@ void init_rect()
     for(i = 0; i<6; i++)
     {
         rectangles[i].tr_corner.x = 0;
-        rectangles[i].tr_corner.y =  0;
+        rectangles[i].tr_corner.y =  REC_MIN_Y;
         rectangles[i].section = 0;
         rectangles[i].color = RA8875_BLUE;
     }
@@ -110,16 +111,29 @@ void init_rect()
     // initialize letter placeholder rectangles: Here the Letter rectangles must be placed in order to solve the puzzle.
     int x, y;
     char password[7] = "PASSWD";
+
+    for(int j = 0; j<3; j++)
+    {
+        fill_display(RA8875_BLACK);
+        delay(500);
+        for(i = 0; i<6; i++)
+        {
+            section_to_xy(18+i, &x, &y);
+            Serial.print("x value: " + String(x));
+            Serial.print("y value: " + String(y));
+            letter_place[i].tr_corner.x = x;
+            letter_place[i].tr_corner.y =  y;
+            letter_place[i].section = 18+i;
+            letter_place[i].color = RA8875_BLUE;
+            local_tft.drawChar(letter_place[i].tr_corner.x+40, letter_place[i].tr_corner.y+40, password[i], RA8875_RED, RA8875_BLACK, 8);
+        }
+        delay(500);
+    }
+
+    delay(500);
+    fill_display(BACKGROUND_COLOR);
     for(i = 0; i<6; i++)
     {
-        section_to_xy(18+i, &x, &y);
-        Serial.print("x value: " + String(x));
-        Serial.print("y value: " + String(y));
-        letter_place[i].tr_corner.x = x;
-        letter_place[i].tr_corner.y =  y;
-        letter_place[i].section = 18+i;
-        letter_place[i].color = RA8875_BLUE;
-
         /*
         local_tft.drawRect(letter_place[i].tr_corner.x+10, letter_place[i].tr_corner.y, REC_SIZE_X-15, REC_SIZE_Y-30, letter_place[i].color);
         */
@@ -128,6 +142,30 @@ void init_rect()
         local_tft.drawChar(letter_place[i].tr_corner.x+40, letter_place[i].tr_corner.y+40, password[i], RA8875_RED, RA8875_YELLOW, 8);
         placeholder_letters[i] = {};
     }
+
+    delay(1500);
+
+    for(i = 0; i<6; i++)
+    {
+        /*
+        local_tft.drawRect(letter_place[i].tr_corner.x+10, letter_place[i].tr_corner.y, REC_SIZE_X-15, REC_SIZE_Y-30, letter_place[i].color);
+        */
+        local_tft.fillRect(letter_place[i].tr_corner.x, letter_place[i].tr_corner.y, REC_SIZE_X, REC_SIZE_Y-1, RA8875_YELLOW);
+        local_tft.drawRect(letter_place[i].tr_corner.x, letter_place[i].tr_corner.y, REC_SIZE_X, REC_SIZE_Y-1, letter_place[i].color);
+    }
+
+    local_tft.fillRect(0, 0, REC_SIZE_X*2, REC_MIN_Y, RA8875_GREEN);
+    local_tft.drawRect(0, 0, REC_SIZE_X*2, REC_MIN_Y, 0x07D0);
+    local_tft.textMode();
+    local_tft.textTransparent(RA8875_RED);
+    local_tft.textEnlarge(1);
+    local_tft.textSetCursor(80, 10);
+    local_tft.textWrite("SHOW");
+    local_tft.graphicsMode();
+
+    local_tft.fillRect(rectangles[0].tr_corner.x, rectangles[0].tr_corner.y, REC_SIZE_X, REC_SIZE_Y, rectangles[0].color);
+
+
     /*
     local_tft.drawFastHLine(letter_place[0].tr_corner.x+10, letter_place[0].tr_corner.y, 6*REC_SIZE_X-15, RA8875_BLUE);
     local_tft.drawFastHLine(letter_place[0].tr_corner.x+10, letter_place[0].tr_corner.y+REC_SIZE_Y-30, 6*REC_SIZE_X-15, RA8875_BLUE);
@@ -160,7 +198,7 @@ void draw_placeholders()
         local_tft.fillRect(letter_place[i].tr_corner.x, letter_place[i].tr_corner.y, REC_SIZE_X, REC_SIZE_Y-1, RA8875_YELLOW);
         local_tft.drawRect(letter_place[i].tr_corner.x, letter_place[i].tr_corner.y, REC_SIZE_X, REC_SIZE_Y-1, letter_place[i].color);
         //local_tft.drawChar(letter_place[i].tr_corner.x+40, letter_place[i].tr_corner.y+40, password[i], RA8875_RED, RA8875_YELLOW, 8);
-        draw_placeholder_letters();
+        //draw_placeholder_letters();
     }
     /*
 
@@ -359,63 +397,11 @@ bool rectangles_game(tsPoint_t touch_raw)
         if(rectangles[rect_selected_num].section == 0)
             section0free = false;
 
-        if(rectangles[rect_selected_num].section >= 12)
+        if(rectangles[rect_selected_num].section >= 5)
         {
             draw_placeholder_letters();
         }
         last_action = last_action_none;
-    }
-    else if(last_action == last_action_encoder3)
-    {
-        
-        random_letter_generation(false);
-        int section; 
-        int letter_bg_color;
-        int char_x, char_y;
-        bool valid_section;
-        for(section=0; section<18; section++)
-        {
-            valid_section = is_section_with_letter(section);
-            if(valid_section)
-            {
-                char mychar = get_letter(section);
-                int rect_num = who_is_here(section);
-                if (rect_num == -1)
-                {
-                    letter_bg_color = BACKGROUND_COLOR;
-                }
-                else
-                {
-                    letter_bg_color = rectangles[rect_num].color;
-                }
-            section_to_xy(section, &char_x, &char_y);
-            local_tft.drawChar(char_x+40, char_y+40, mychar, RA8875_BLACK, letter_bg_color , 5);
-            }
-        }
-        delay(1000);
-        for(section=0; section<18; section++)
-        {   
-            valid_section = is_section_with_letter(section);
-            if(valid_section)
-            {
-                char mychar = get_letter(section);
-                int rect_num = who_is_here(section);
-                int letter_color; 
-                if (rect_num == -1)
-                {
-                    letter_color = BACKGROUND_COLOR;
-                    letter_bg_color = BACKGROUND_COLOR;
-                }
-                else
-                {
-                    letter_color = rectangles[rect_num].color;
-                    letter_bg_color = rectangles[rect_num].color;
-                }
-                
-                section_to_xy(section, &char_x, &char_y);
-                local_tft.drawChar(char_x + 40, char_y + 40, mychar, letter_color, letter_bg_color, 5);
-            }
-        }
     }
     else if(last_action == last_action_touch)
     {
@@ -423,48 +409,103 @@ bool rectangles_game(tsPoint_t touch_raw)
         //Calcuate the real X/Y position based on the calibration matrix 
         calibrateTSPoint(&calibrated, &touch_raw, &local_matrix);
 
-        int section = get_section(calibrated.x, calibrated.y);
-
-        int i; 
-        for(i = 0; i< num_rect_visible; i++)
+        if(calibrated.y < REC_MIN_Y && calibrated.x < 2*REC_SIZE_X)
         {
-            if(rectangles[i].section == section)
+            //show letters. 
+            random_letter_generation(false);
+            int section; 
+            int letter_bg_color;
+            int char_x, char_y;
+            bool valid_section;
+            for(section=0; section<18; section++)
             {
-                Serial.println("rectancle was touched! no: ");
-                Serial.println(i);
-                Serial.println("section");
-                Serial.println(section);
-                rect_selected_num = i;
-                x = rectangles[rect_selected_num].tr_corner.x;
-                y = rectangles[rect_selected_num].tr_corner.y;
-                color = rectangles[rect_selected_num].color;
-                section = rectangles[rect_selected_num].section;
-
-                if(section < 18)
+                valid_section = is_section_with_letter(section);
+                if(valid_section)
                 {
-                    int placeholder_x, placeholder_y;
-                    section_to_xy(free_placeholer_num+18, &placeholder_x, &placeholder_y);
-                    Serial.println("fill rect");
-
-                    local_tft.fillRect(rectangles[rect_selected_num].tr_corner.x, rectangles[rect_selected_num].tr_corner.y, REC_SIZE_X, REC_SIZE_Y, BACKGROUND_COLOR);
-
-                    rectangles[rect_selected_num].tr_corner.x = placeholder_x;
-                    rectangles[rect_selected_num].tr_corner.y = placeholder_y;
-                    rectangles[rect_selected_num].color = color;
-                    rectangles[rect_selected_num].section = free_placeholer_num+18;
-
-                    local_tft.fillRect(rectangles[rect_selected_num].tr_corner.x+10, rectangles[rect_selected_num].tr_corner.y, REC_SIZE_X-15, REC_SIZE_Y-30, rectangles[rect_selected_num].color);
-                    
-                    if(is_section_with_letter(section)) //&& color == RA8875_RED)
+                    char mychar = get_letter(section);
+                    int rect_num = who_is_here(section);
+                    if (rect_num == -1)
                     {
-                        char mychar = get_letter(section);
-                        shift_letter(section);
-                        Serial.println(mychar);
-                        local_tft.drawChar(placeholder_x + 40, placeholder_y + 40, mychar, RA8875_BLACK, rectangles[rect_selected_num].color , 5);
+                        letter_bg_color = BACKGROUND_COLOR;
                     }
+                    else
+                    {
+                        letter_bg_color = rectangles[rect_num].color;
+                    }
+                section_to_xy(section, &char_x, &char_y);
+                local_tft.drawChar(char_x+50, char_y+50, mychar, RA8875_BLACK, letter_bg_color , 5);
                 }
-                
-                break;
+            }
+            delay(1000);
+            for(section=0; section<18; section++)
+            {   
+                valid_section = is_section_with_letter(section);
+                if(valid_section)
+                {
+                    char mychar = get_letter(section);
+                    int rect_num = who_is_here(section);
+                    int letter_color; 
+                    if (rect_num == -1)
+                    {
+                        letter_color = BACKGROUND_COLOR;
+                        letter_bg_color = BACKGROUND_COLOR;
+                    }
+                    else
+                    {
+                        letter_color = rectangles[rect_num].color;
+                        letter_bg_color = rectangles[rect_num].color;
+                    }
+                    
+                    section_to_xy(section, &char_x, &char_y);
+                    local_tft.drawChar(char_x + 50, char_y + 50, mychar, letter_color, letter_bg_color, 5);
+                }
+            }
+
+        }
+        else
+        {
+            int section = get_section(calibrated.x, calibrated.y);
+
+            int i; 
+            for(i = 0; i< num_rect_visible; i++)
+            {
+                if(rectangles[i].section == section)
+                {
+                    Serial.println("rectancle was touched! no: ");
+                    Serial.println(i);
+                    Serial.println("section");
+                    Serial.println(section);
+                    rect_selected_num = i;
+                    x = rectangles[rect_selected_num].tr_corner.x;
+                    y = rectangles[rect_selected_num].tr_corner.y;
+                    color = rectangles[rect_selected_num].color;
+                    section = rectangles[rect_selected_num].section;
+
+                    if(section < 18)
+                    {
+                        int placeholder_x, placeholder_y;
+                        section_to_xy(free_placeholer_num+18, &placeholder_x, &placeholder_y);
+                        Serial.println("fill rect");
+
+                        local_tft.fillRect(rectangles[rect_selected_num].tr_corner.x, rectangles[rect_selected_num].tr_corner.y, REC_SIZE_X, REC_SIZE_Y, BACKGROUND_COLOR);
+
+                        rectangles[rect_selected_num].tr_corner.x = placeholder_x;
+                        rectangles[rect_selected_num].tr_corner.y = placeholder_y;
+                        rectangles[rect_selected_num].color = color;
+                        rectangles[rect_selected_num].section = free_placeholer_num+18;
+
+                        local_tft.fillRect(rectangles[rect_selected_num].tr_corner.x, rectangles[rect_selected_num].tr_corner.y, REC_SIZE_X, REC_SIZE_Y, rectangles[rect_selected_num].color);
+                        
+                        if(is_section_with_letter(section)) //&& color == RA8875_RED)
+                        {
+                            char mychar = get_letter(section);
+                            shift_letter(section);
+                            Serial.println(mychar);
+                            local_tft.drawChar(placeholder_x + 50, placeholder_y + 50, mychar, RA8875_BLACK, rectangles[rect_selected_num].color , 5);
+                        }
+                    }
+
+                }
             }
         }
         last_action = last_action_none;
@@ -523,14 +564,14 @@ bool isNewRecToCome(int rect_selected_num)
 
 int get_section(int x, int y)
 {
-    int section = (y/REC_SIZE_Y)*NUM_SECTIONS_X + (x/REC_SIZE_X);
+    int section = ((y-REC_MIN_Y)/REC_SIZE_Y)*NUM_SECTIONS_X + (x/REC_SIZE_X);
     return section;
 }
 
 void section_to_xy(int section, int* x, int* y)
 {
     int section_y = section / NUM_SECTIONS_X;
-    *y = section_y * REC_SIZE_Y;
+    *y = section_y * REC_SIZE_Y + REC_MIN_Y;
 
 
     *x = (section - (section_y * NUM_SECTIONS_X)) * REC_SIZE_X;
@@ -610,7 +651,7 @@ void draw_placeholder_letters()
             bg_color = rectangles[rect_num].color;
         else 
             bg_color = RA8875_YELLOW;
-        local_tft.drawChar(placeholder_x + 40, placeholder_y +40, placeholder_letters[i], RA8875_BLACK, bg_color, 5);
+        local_tft.drawChar(placeholder_x + 50, placeholder_y +50, placeholder_letters[i], RA8875_BLACK, bg_color, 5);
     }
 }
 
