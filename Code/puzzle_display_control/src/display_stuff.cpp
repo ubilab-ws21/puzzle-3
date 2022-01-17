@@ -145,7 +145,14 @@ void init_rect()
         placeholder_letters[i] = {};
     }
 
-    delay(1500);
+    local_tft.drawFastHLine(0, REC_MIN_Y-1, SCREEN_SIZE_X, RA8875_BLUE);
+    local_tft.textMode();
+    local_tft.textTransparent(RA8875_RED);
+    local_tft.textEnlarge(1);
+    local_tft.textSetCursor(350, 10);
+    local_tft.textWrite("Ferdi's Login Space");
+    local_tft.graphicsMode();
+    delay(1000);
 
     for(i = 0; i<6; i++)
     {
@@ -157,6 +164,8 @@ void init_rect()
     }
 
     draw_showbutton(0);
+
+
 
     local_tft.fillRect(rectangles[0].tr_corner.x, rectangles[0].tr_corner.y, REC_SIZE_X, REC_SIZE_Y, rectangles[0].color);
     
@@ -223,23 +232,12 @@ bool rectangles_game(tsPoint_t touch_raw)
         Serial.print(last_action);
         // the last action matches the current encode number. 
         int cur_encoder_num = last_action;
-        /*if(color == RA8875_RED)
-        {
-            encoder_set_value(1, 0);
-            last_action = last_action_none;
-            return 0;
-        }*/
-        /*Serial.print("selected rect: ");
-        Serial.println(rect_selected_num);
-        Serial.println(x);
-        Serial.println(y);
-        Serial.println(rec_section);*/
 
         int sign; 
         if(encoder_get_value(cur_encoder_num) < 0)
-            sign = 1;
-        else
             sign = -1;
+        else
+            sign = 1;
 
         // remove current position of the selected rectangle
         local_tft.fillRect(x, y, REC_SIZE_X, REC_SIZE_Y, BACKGROUND_COLOR);
@@ -324,18 +322,6 @@ bool rectangles_game(tsPoint_t touch_raw)
                     Serial.println("else loop");
                 }
             }
-            /*
-            else if((y + 2 * REC_SIZE_Y <= SCREEN_SIZE_Y) &&
-            (!position_occupied(rec_section+1)))
-            {
-                Serial.println("down");
-                y+= REC_SIZE_Y;
-                x = 0;
-                rec_section += 1;
-                rectangles[rect_selected_num].tr_corner.y = y;
-                rectangles[rect_selected_num].tr_corner.x = x;
-                rectangles[rect_selected_num].section = rec_section;
-            }*/
         }
         else if (sign == -1)
         {
