@@ -119,9 +119,18 @@ void init_rect()
         letter_place[i].section = 18+i;
         letter_place[i].color = RA8875_BLUE;
 
-        local_tft.drawRect(letter_place[i].tr_corner.x, letter_place[i].tr_corner.y, REC_SIZE_X, REC_SIZE_Y, letter_place[i].color);
+        local_tft.drawRect(letter_place[i].tr_corner.x+10, letter_place[i].tr_corner.y, REC_SIZE_X-15, REC_SIZE_Y-30, letter_place[i].color);
         placeholder_letters[i] = {};
     }
+
+    local_tft.drawFastHLine(letter_place[0].tr_corner.x+10, letter_place[0].tr_corner.y, 6*REC_SIZE_X-15, RA8875_BLUE);
+    local_tft.drawFastHLine(letter_place[0].tr_corner.x+10, letter_place[0].tr_corner.y+REC_SIZE_Y-30, 6*REC_SIZE_X-15, RA8875_BLUE);
+    local_tft.textMode();
+    local_tft.textTransparent(RA8875_RED);
+    local_tft.textSetCursor(letter_place[2].tr_corner.x+25, letter_place[0].tr_corner.y+REC_SIZE_Y-35);
+    local_tft.textEnlarge(1);
+    local_tft.textWrite("Password");
+    local_tft.graphicsMode();
     
     free_placeholer_num = 0;
 
@@ -140,7 +149,7 @@ void draw_placeholders()
 
     for(int i = 0; i<6; i++)
     {
-        local_tft.drawRect(letter_place[i].tr_corner.x, letter_place[i].tr_corner.y, REC_SIZE_X, REC_SIZE_Y, letter_place[i].color);
+        local_tft.drawRect(letter_place[i].tr_corner.x+10, letter_place[i].tr_corner.y+10, REC_SIZE_X-10, REC_SIZE_Y-10, letter_place[i].color);
     }
 }
 
