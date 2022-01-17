@@ -954,4 +954,26 @@ void final_screen()
 {
     static Adafruit_RA8875 local_tft = gettft();
     local_tft.fillScreen(RA8875_BLUE);
+
+    local_tft.textMode();
+
+    local_tft.textSetCursor(140, 100);
+
+    local_tft.textTransparent(RA8875_RED);
+    local_tft.textEnlarge(2);
+    local_tft.textWrite("Code: ");
+
+    local_tft.graphicsMode();
+
+    char password[5] = "1234";
+    int x, y;
+    
+    for(int i = 0; i<4; i++)
+    {
+        section_to_xy(i+13, &x, &y);
+        local_tft.drawChar(x+30, y+30, password[i], RA8875_RED, RA8875_BLUE, 10);
+        placeholder_letters[i] = {};
+    }
+
+
 }
