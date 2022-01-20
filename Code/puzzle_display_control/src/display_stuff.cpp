@@ -883,7 +883,7 @@ int waitForTouchorEncoderEvent(tsPoint_t * point)
     /* Wait around for a new touch event (INT pin goes low) */
     while (digitalRead(RA8875_INT))
     {
-        int enc_val = check_encoder();
+        int enc_val = check_game_encoders();
         switch(enc_val)
         {
             case 1:

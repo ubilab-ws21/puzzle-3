@@ -10,6 +10,8 @@ class Encoders {
 
 Encoders encoder[NUM_ENCODERS_DEFINED];
 
+Encoders encoder_vol;
+
 void init_encoder()
 {
 
@@ -41,17 +43,29 @@ void init_encoder()
         Serial.println("Encoder Start = " + String((int32_t)encoder[0]._encoder.getCount()));
 
     }
+
+
+    // init volume encoder
+    encoder_vol._encoder.attachSingleEdge(22, 21);
+
+    // set starting count value after attaching
+    encoder_vol._encoder.setCount(20);
+
+    // clear the encoder's raw count and set the tracked count to zero
+    //encoder2.clearCount();
+    encoder_vol.encoder_value = 0;
+    encoder_vol.old_value = 0;
 }
 
 int old_val = 0;
-int check_encoder()
+int check_game_encoders()
 {
     int i;
     for(i = 0; i<NUM_ENCODERS_DEFINED; i++)
     {
         if (encoder[i].encoder_value !=  encoder[i]._encoder.getCount())
         {
-            if(encoder[i]._encoder.getCount() > -12 && encoder[i]._encoder.getCount() < 12)
+            if(encoder[i]._encoder.getCount() >= -12 && encoder[i]._encoder.getCount() <= 12)
             {
                 encoder[i].encoder_value = encoder[i]._encoder.getCount();
                 Serial.println("Encoder no " + String(i) + ", count  = " + String((int32_t)encoder[i].encoder_value));
@@ -64,6 +78,25 @@ int check_encoder()
         }
     }
     return 0;
+}
+
+bool check_vol_encoder(int* new_volume)
+{
+    if (encoder_vol.encoder_value !=  encoder_vol._encoder.getCount())
+        {
+            if(encoder_vol._encoder.getCount() >= 0 && encoder_vol._encoder.getCount() < 26)
+            {
+                encoder_vol.encoder_value = encoder_vol._encoder.getCount();
+                Serial.println("Encoder vol count  = " + String((int32_t)encoder_vol.encoder_value));
+                *new_volume = encoder_vol.encoder_value;
+            }
+            else
+            {
+                encoder_vol._encoder.setCount(encoder_vol.encoder_value);
+            }
+            return true;       
+        }
+    return false;
 }
 
 int encoder_get_value(int encoder_num)

@@ -7,9 +7,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define LETTER_GAME 1
-
-
 // Audio interface
 #define TX 4 
 #define RX 15 
@@ -59,7 +56,7 @@ void setup()
     */
     mp3Player.EQ(DFPLAYER_EQ_NORMAL);
     // Volume 1 to 30
-    mp3Player.volume(30);
+    mp3Player.volume(20);
 
     init_display();
     init_encoder();
@@ -72,6 +69,7 @@ void setup()
 */
 /**************************************************************************/
 int encoder_triggered = 0;
+int new_vol = 20;
 void loop()
 {
 tsPoint_t raw;
@@ -83,10 +81,12 @@ tsPoint_t raw;
         case 0:
             if(!flagset)
             {
+                mp3Player.loopFolder(ESA);
                 first_screen();
                 flagset = true;   
             }
-            encoder_triggered = check_encoder();
+            encoder_triggered = check_game_encoders();
+
             if (encoder_triggered) //if(antenna applied)
             {
                 state = 1;
@@ -103,7 +103,8 @@ tsPoint_t raw;
                 sliding_bars(3);
                 flagset = true;
             }
-            encoder_triggered = check_encoder();
+
+            encoder_triggered = check_game_encoders();
             if (encoder_triggered)
             {
                 solved = sliding_bars(encoder_triggered);
@@ -139,11 +140,15 @@ tsPoint_t raw;
                     
                     final_screen();
                     flagset = true;
+                    mp3Player.stop();
                 }
-                
-                //whitescreen;
-                //pause_audio;
                 break;
+        }
+
+        // check if volume has been changed (by triggering volume controller)
+        if(check_vol_encoder(&new_vol))
+        {
+            mp3Player.volume(new_vol);
         }
     }
 }
