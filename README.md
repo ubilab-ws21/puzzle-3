@@ -7,6 +7,8 @@
 - [Puzzle description](#puzzle-description)
 	- [Puzzle Part 1](#Puzzle-1)
 	- [Puzzle Part 2](#Puzzle-2)
+	- [Puzzle Part 3](#Puzzle-3)
+- [MQTT Topics/Specification](#MQTT-Spec)
 - [Documents](#documents)
 
 ## Puzzle overview
@@ -51,69 +53,98 @@ After the puzzle was solved, the screen changes again and shows the code which i
 
 ## MQTT Topics/Specification
 
-Topic: 3/antenna
+Topic: 3/gamecontrol
 
-Messages:
+Description: Control the radio: which puzzle state is currently in play
 
-- Start:
+Payload: Enum(Gamecontrol)
 
- 	Operator: start the radio-puzzle
+Reset-Value: Idle
 
- 	Radio: receive to start the puzzle
+Enum Values:
 
-- PlugStatus:
+- Idle: Radio puzzle is waiting in Idle mode to be started
+	Operator: set the third puzzle in idle mode
+	radio: receive to stay in idle mode
 
+- antenna: antenna game is started
+	Operator: start the first part of the puzzle
+	radio: receive to start the puzzle with antenna game
+- antennaFinished: antenna game is finished
+	Operator: receive updates on the gamestatus
+	radio: update once the game is finished
+
+- map: map game is played
+	Operator: start the second part of the puzzle
+	radio: receive to start the second part of the puzzle
+- mapFinished: map game is finished
+	Operator: receive updates on the gamestatus
+	radio: update once the game is finished
+
+- touchgame: touchgame is played
+	Operator: start the third part of the puzzle
+	radio: receive to start the third part of the puzzle
+- touchgameFinished: touchgame is finished
+	Operator: receive updates on the game status
+	radio: update once the game is finished
+
+- finished: puzzle 3 is solved
+	Operator: set the third puzzle in finished mode
+	radio: receive to get in finished mode
+
+Topic: 3/antenna/plugStatus
+
+Description: gives information about the antenna
+
+Payload: boolean
+
+Reset-Value: false
 	Radio: update if antenna is plugged in
-
 	Operator: receive updates on the antenna
+	
+Topic: 3/antenna/orientation
 
-- Orientation:
+Description: gives information about the antenna orientation, should the operator know about the randomisation of the required postion?
 
-	Radio: update if antenna is set up in the correct direction. The first puzzle is signaled as solved
-
+Payload: int[0-23] or boolean
+	Radio: update if antenna is set up in the correct direction
 	Operator: receive updates on the antenna orientation
 
-Topic: 3/map
-
-Messages:
-
-- Start:
-
- 	Operator: start the map-puzzle
-
- 	Radio: receive to start the next puzzle
-
-- Knob1:
-
-	Radio: update if the the first knob/color reaches/leaves the correct postion
 	
+Topic: 3/map/knob1
+
+Description: Control/Check the first knob
+
+Playload: boolean
+
+Reset-Value: false
+	Radio: update if the the first knob/color reaches/leaves the correct postion
 	Operator: receive updates on the first knob
 
-- Knob2:
+Topic: 3/map/knob2
 
+Description: Control/Check the second knob
+
+Playload: boolean
+
+Reset-Value: false
 	Radio: update if the the second knob/color reaches/leaves the correct postion
-
 	Operator: receive updates on the second knob
 
-- Knob3:
+Topic: 3/map/knob3
 
+Description: Control/Check the third knob
+
+Playload: boolean
+
+Reset-Value: false
 	Radio: update if the the third knob/color reaches/leaves the correct postion
-
 	Operator: receive updates on the third knob
 
 Topic: 3/touchgame
 
-- Start:
+Description: needs some discussion what should be updated to the operator
 
-	Operator: start the last puzzle
-
-	Radio: receive to start the last puzzle
-	
-- Finished
-
-	Radio: update if the puzzle is finished
-	
-	Operator: receive updates on the puzzle status
 
 ## Documents
 The datasheets can be found in the datasheets directory
