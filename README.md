@@ -154,8 +154,14 @@ The board with the ICs, placed on the bottom of the radio case inside, should be
 Software game: We only have one rectangle. By placing the blue rectangle on a letter and touching it, the rectangle and the letter will go to the next free location in the password space.
 
 
-Next Tasks - 13.01
-- Build another encoder
-- Finish Software Game
-- Finish Design, see where ICs are best placed. 
-
+Next Tasks - 23.01
+- Alles zusammen bauen (außer Platine)
+- Teile Anmalen 
+- Encoder an Plexiglas festmachen (Verkabelung dahin) 
+- Driver Board an case anbringen
+- Landkarte in Auftrag geben 
+- Displayhousing fix montieren
+- DisplayDriver Anbindung. (Pins Umlöten, Anbindung konstruieren)
+- plantine planen und Grundform schneiden
+- geteilte pull-ups und Wiederstände testen.
+- Audios neu aufnehmen
