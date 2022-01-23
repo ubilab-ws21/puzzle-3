@@ -99,6 +99,14 @@ bool check_vol_encoder(int* new_volume)
     return false;
 }
 
+bool vol_encoder_triggered()
+{
+    if (encoder_vol.encoder_value !=  encoder_vol._encoder.getCount())
+        return true;
+    else
+        return false;
+}
+
 int encoder_get_value(int encoder_num)
 {
     if(encoder_num <= NUM_ENCODERS_DEFINED && encoder_num > 0)

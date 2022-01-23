@@ -78,7 +78,7 @@ int rect_selected_num;
 
 rect selected_rect;
 
-rect rectangles[6];
+rect rectangles;
 
 rect letter_place[6];
 
@@ -88,34 +88,32 @@ static int function_called_count = 0;
 
 void init_rect()
 {
-
     static tsMatrix_t local_matrix = gettsMatrix();
     static Adafruit_RA8875 local_tft = gettft();
 
     local_tft.fillScreen(BACKGROUND_COLOR);
 
-    int i;
-    for(i = 0; i<6; i++)
-    {
-        rectangles[i].tr_corner.x = 0;
-        rectangles[i].tr_corner.y =  REC_MIN_Y;
-        rectangles[i].section = 0;
-        rectangles[i].color = RA8875_BLUE;
-    }
+    rectangles.tr_corner.x = 0;
+    rectangles.tr_corner.y =  REC_MIN_Y;
+    rectangles.section = 0;
+    rectangles.color = RA8875_BLUE;
 
-    calibrateTSPoint(&rectangles[0].tr_corner_cal, &rectangles[0].tr_corner, &local_matrix);
-    Serial.println(rectangles[0].tr_corner_cal.x);
-    Serial.println(rectangles[0].tr_corner_cal.y);
+    calibrateTSPoint(&rectangles.tr_corner_cal, &rectangles.tr_corner, &local_matrix);
+    Serial.println(rectangles.tr_corner_cal.x);
+    Serial.println(rectangles.tr_corner_cal.y);
 
-    local_tft.fillRect(rectangles[0].tr_corner.x,rectangles[0].tr_corner.y, REC_SIZE_X, REC_SIZE_Y, rectangles[0].color);
+    local_tft.fillRect(rectangles.tr_corner.x,rectangles.tr_corner.y, REC_SIZE_X, REC_SIZE_Y, rectangles.color);
 
     num_rect_visible = 1;
     rect_selected_num = 0;
 
-    selected_rect = rectangles[0];
+    selected_rect = rectangles;
 
     // initialize letter placeholder rectangles: Here the Letter rectangles must be placed in order to solve the puzzle.
     int x, y;
+
+    int i;
+    
     char password[7] = "PASSWD";
 
     for(int j = 0; j<3; j++)
@@ -138,6 +136,7 @@ void init_rect()
 
     delay(500);
     fill_display(BACKGROUND_COLOR);
+
     for(i = 0; i<6; i++)
     {
         /*
@@ -152,12 +151,12 @@ void init_rect()
     local_tft.drawFastHLine(0, REC_MIN_Y-1, SCREEN_SIZE_X, RA8875_BLUE);
     local_tft.textMode();
     local_tft.textTransparent(RA8875_RED);
-    local_tft.textEnlarge(0);
-    local_tft.textSetCursor(330, 10);
+    local_tft.textEnlarge(1);
+    local_tft.textSetCursor(280, 10);
     local_tft.textWrite("Ferdi's");
-    local_tft.textSetCursor(320, 30);
+    local_tft.textSetCursor(420, 10);
     local_tft.textWrite("Login");
-    local_tft.textSetCursor(320, 45);
+    local_tft.textSetCursor(350, 40);
     local_tft.textWrite("Space");
     local_tft.graphicsMode();
     delay(1000);
@@ -173,9 +172,7 @@ void init_rect()
 
     draw_showbutton(0);
 
-
-
-    local_tft.fillRect(rectangles[0].tr_corner.x, rectangles[0].tr_corner.y, REC_SIZE_X, REC_SIZE_Y, rectangles[0].color);
+    local_tft.fillRect(rectangles.tr_corner.x, rectangles.tr_corner.y, REC_SIZE_X, REC_SIZE_Y, rectangles.color);
     
     free_placeholer_num = 0;
 
@@ -185,7 +182,6 @@ void init_rect()
     }
 
     random_letter_generation(true);   
-
 }
 
 void draw_placeholders()
@@ -230,10 +226,10 @@ bool rectangles_game(tsPoint_t touch_raw)
     static Adafruit_RA8875 local_tft = gettft();
     static tsMatrix_t local_matrix = gettsMatrix();
 
-    int x = rectangles[rect_selected_num].tr_corner.x;
-    int y = rectangles[rect_selected_num].tr_corner.y;
-    int rec_section = rectangles[rect_selected_num].section;
-    int color = rectangles[rect_selected_num].color;
+    int x = rectangles.tr_corner.x;
+    int y = rectangles.tr_corner.y;
+    int rec_section = rectangles.section;
+    int color = rectangles.color;
 
     // if last action was an encoder action, i.e. either of the two first encoders was used:
     if(last_action >= 1 && last_action <= 2)
@@ -265,43 +261,18 @@ bool rectangles_game(tsPoint_t touch_raw)
             Serial.println(rec_section+1);
             if(cur_encoder_num == 1)
             {
-                if(((rec_section+1) % NUM_SECTIONS_X) && (rec_section+1 < NUM_SECTIONS) &&
-                (!position_occupied(rec_section + 1)))
+                if(((rec_section+1) % NUM_SECTIONS_X) && (rec_section+1 < NUM_SECTIONS))
                 {
- 
                     Serial.println("one to the rightbefore: ");
                     Serial.println(x);
                     x += REC_SIZE_X;
                     rec_section += 1;
-                    rectangles[rect_selected_num].tr_corner.x = x;
-                    rectangles[rect_selected_num].section = rec_section;
-                    if(rec_section > 0)
-                    {
-                        section0free = true;
-                    }
+                    rectangles.tr_corner.x = x;
+                    rectangles.section = rec_section;
                 }
                 else if(!(rec_section+1) % NUM_SECTIONS_X)
                 {
                     // no nothing. rectangle should stay where it is
-                }
-                else if(isNewRecToCome(rect_selected_num))
-                {
-
-                    //for now: puzzle is solved now!
-                    Serial.print("puzzle solved");
-                    //return 1;
-
-                    
-                    Serial.print("num rect visinle");
-                    Serial.print(num_rect_visible);
-                    if(num_rect_visible < 6)
-                    {
-                        local_tft.fillRect(x, y, REC_SIZE_X, REC_SIZE_Y, color);
-                        num_rect_visible++;
-                        Serial.print(num_rect_visible);
-                        //save_rect_data(rect_selected_num, selected_rect.tr_corner, selected_rect.color);
-                        rect_selected_num = num_rect_visible-1;
-                    }
                 }
                 else {
                     Serial.println("else loop");
@@ -309,20 +280,13 @@ bool rectangles_game(tsPoint_t touch_raw)
             }
             else if(cur_encoder_num == 2)
             {
-                if((y + 2 * REC_SIZE_Y <= SCREEN_SIZE_Y) && (rec_section+6 < NUM_SECTIONS) &&
-                (!position_occupied(rec_section+6)))
+                if((y + 2 * REC_SIZE_Y <= SCREEN_SIZE_Y) && (rec_section+6 < NUM_SECTIONS))
                 {
                     Serial.println("down");
                     y+= REC_SIZE_Y;
-                    //x = 0;
                     rec_section += 6;
-                    if(rec_section > 0)
-                    {
-                        section0free = true;
-                    }
-                    rectangles[rect_selected_num].tr_corner.y = y;
-                    //rectangles[rect_selected_num].tr_corner.x = x;
-                    rectangles[rect_selected_num].section = rec_section;
+                    rectangles.tr_corner.y = y;
+                    rectangles.section = rec_section;
                 }
                 else if(!(rec_section+6 < NUM_SECTIONS))
                 {
@@ -337,26 +301,13 @@ bool rectangles_game(tsPoint_t touch_raw)
         {
              if(cur_encoder_num == 1)
                 {
-                    if(( x - REC_SIZE_X >= 0) && (!position_occupied(rec_section - 1)))
+                    if(( x - REC_SIZE_X >= 0))
                     {
                         x -= REC_SIZE_X;
                         rec_section -= 1;
-                        rectangles[rect_selected_num].tr_corner.x = x;
-                        rectangles[rect_selected_num].section = rec_section;
-                        if(rec_section == 0)
-                        {
-                            section0free = false;
-                        }
-                    }/*
-                    else if(( y - REC_SIZE_Y >= 0) && (!position_occupied(rec_section - 1)))
-                    {
-                        y -= REC_SIZE_Y;
-                        x = SCREEN_SIZE_X - REC_SIZE_X;
-                        rec_section -= 1;
-                        rectangles[rect_selected_num].tr_corner.y = y;
-                        rectangles[rect_selected_num].tr_corner.x = x;
-                        rectangles[rect_selected_num].section = rec_section;
-                    }*/
+                        rectangles.tr_corner.x = x;
+                        rectangles.section = rec_section;
+                    }
                     else
                     {
 
@@ -364,25 +315,24 @@ bool rectangles_game(tsPoint_t touch_raw)
                 }
                 else if(cur_encoder_num == 2)
                 {
-                    if(( y - REC_SIZE_Y >= 0) && (!position_occupied(rec_section - 6)))
+                    if(( y - REC_SIZE_Y >= 0))
                     {
                         y -= REC_SIZE_Y;
-                        //x = SCREEN_SIZE_X - REC_SIZE_X;
                         rec_section -= 6;
-                        rectangles[rect_selected_num].tr_corner.y = y;
-                        rectangles[rect_selected_num].tr_corner.x = x;
-                        rectangles[rect_selected_num].section = rec_section;                        
+                        rectangles.tr_corner.y = y;
+                        rectangles.tr_corner.x = x;
+                        rectangles.section = rec_section;                        
                     }
                 }
         }
 
         encoder_set_value(cur_encoder_num, 0);
 
-        local_tft.fillRect(rectangles[rect_selected_num].tr_corner.x, rectangles[rect_selected_num].tr_corner.y, REC_SIZE_X, REC_SIZE_Y, rectangles[rect_selected_num].color);
-        if(rectangles[rect_selected_num].section == 0)
+        local_tft.fillRect(rectangles.tr_corner.x, rectangles.tr_corner.y, REC_SIZE_X, REC_SIZE_Y, rectangles.color);
+        if(rectangles.section == 0)
             section0free = false;
 
-        if(rectangles[rect_selected_num].section >= 5)
+        if(rectangles.section >= 5)
         {
             draw_placeholder_letters();
         }
@@ -416,17 +366,17 @@ bool rectangles_game(tsPoint_t touch_raw)
             int i; 
             for(i = 0; i< num_rect_visible; i++)
             {
-                if(rectangles[i].section == section)
+                if(rectangles.section == section)
                 {
                     Serial.println("rectancle was touched! no: ");
                     Serial.println(i);
                     Serial.println("section");
                     Serial.println(section);
                     rect_selected_num = i;
-                    x = rectangles[rect_selected_num].tr_corner.x;
-                    y = rectangles[rect_selected_num].tr_corner.y;
-                    color = rectangles[rect_selected_num].color;
-                    section = rectangles[rect_selected_num].section;
+                    x = rectangles.tr_corner.x;
+                    y = rectangles.tr_corner.y;
+                    color = rectangles.color;
+                    section = rectangles.section;
 
                     if(section < 18)
                     {
@@ -434,21 +384,21 @@ bool rectangles_game(tsPoint_t touch_raw)
                         section_to_xy(free_placeholer_num+18, &placeholder_x, &placeholder_y);
                         Serial.println("fill rect");
 
-                        local_tft.fillRect(rectangles[rect_selected_num].tr_corner.x, rectangles[rect_selected_num].tr_corner.y, REC_SIZE_X, REC_SIZE_Y, BACKGROUND_COLOR);
+                        local_tft.fillRect(rectangles.tr_corner.x, rectangles.tr_corner.y, REC_SIZE_X, REC_SIZE_Y, BACKGROUND_COLOR);
 
-                        rectangles[rect_selected_num].tr_corner.x = placeholder_x;
-                        rectangles[rect_selected_num].tr_corner.y = placeholder_y;
-                        rectangles[rect_selected_num].color = color;
-                        rectangles[rect_selected_num].section = free_placeholer_num+18;
+                        rectangles.tr_corner.x = placeholder_x;
+                        rectangles.tr_corner.y = placeholder_y;
+                        rectangles.color = color;
+                        rectangles.section = free_placeholer_num+18;
 
-                        local_tft.fillRect(rectangles[rect_selected_num].tr_corner.x, rectangles[rect_selected_num].tr_corner.y, REC_SIZE_X, REC_SIZE_Y, rectangles[rect_selected_num].color);
+                        local_tft.fillRect(rectangles.tr_corner.x, rectangles.tr_corner.y, REC_SIZE_X, REC_SIZE_Y, rectangles.color);
                         
                         if(is_section_with_letter(section)) //&& color == RA8875_RED)
                         {
                             char mychar = get_letter(section);
                             shift_letter(section);
                             Serial.println(mychar);
-                            local_tft.drawChar(placeholder_x + 50, placeholder_y + 50, mychar, RA8875_BLACK, rectangles[rect_selected_num].color , 5);
+                            local_tft.drawChar(placeholder_x + 50, placeholder_y + 50, mychar, RA8875_BLACK, rectangles.color , 5);
                         }
                     }
 
@@ -488,43 +438,6 @@ int what_was_touched(int x, int y)
     {
         return LETTER_SECTION;
     }
-}
-
-bool isNewRecToCome(int rect_selected_num)
-{
-    int section; 
-    section = get_section(rectangles[rect_selected_num].tr_corner.x, rectangles[rect_selected_num].tr_corner.y);
-
-        Serial.print("section of rect");
-        Serial.print(section);
-    if(section == 23)
-        return true;
-
-    bool found = false;
-    int i; 
-    for(i = section+1; i<NUM_SECTIONS; i++)
-    {
-        Serial.print("section");
-        Serial.println(i);
-        found = false;
-        Serial.println(num_rect_visible);
-        for(int j = 0; j<num_rect_visible; j++)
-        {
-            Serial.print("section of rect no: ");
-            Serial.println(j);
-            Serial.print(get_section(rectangles[j].tr_corner.x, rectangles[j].tr_corner.y));
-            if(get_section(rectangles[j].tr_corner.x, rectangles[j].tr_corner.y) == i)
-            {
-                found = true;
-                break;
-            }
-        }
-        if(!found)
-        {
-            return false; 
-        }
-    }
-    return true;
 }
 
 int get_section(int x, int y)
@@ -599,16 +512,11 @@ bool random_letter_generation(bool init)
     }
     
     return true;
-    
 }
 
 char get_letter(int section)
 {
     return letters[section];
-}
-
-void set_letter(char letter){
-
 }
 
 void blink_section_letters()
@@ -624,14 +532,13 @@ void blink_section_letters()
         if(valid_section)
         {
             char mychar = get_letter(section);
-            int rect_num = who_is_here(section);
-            if (rect_num == -1)
+            if (!is_rect_here(section))
             {
                 letter_bg_color = BACKGROUND_COLOR;
             }
             else
             {
-                letter_bg_color = rectangles[rect_num].color;
+                letter_bg_color = rectangles.color;
             }
         section_to_xy(section, &char_x, &char_y);
         local_tft.drawChar(char_x+50, char_y+50, mychar, RA8875_BLACK, letter_bg_color , 5);
@@ -644,17 +551,16 @@ void blink_section_letters()
         if(valid_section)
         {
             char mychar = get_letter(section);
-            int rect_num = who_is_here(section);
             int letter_color; 
-            if (rect_num == -1)
+            if (!is_rect_here(section))
             {
                 letter_color = BACKGROUND_COLOR;
                 letter_bg_color = BACKGROUND_COLOR;
             }
             else
             {
-                letter_color = rectangles[rect_num].color;
-                letter_bg_color = rectangles[rect_num].color;
+                letter_color = rectangles.color;
+                letter_bg_color = rectangles.color;
             }
             
             section_to_xy(section, &char_x, &char_y);
@@ -672,27 +578,21 @@ void draw_placeholder_letters()
         int placeholder_x, placeholder_y;
         section_to_xy(i+18, &placeholder_x, &placeholder_y);
         int bg_color;
-        int rect_num = who_is_here(i+18);
-        if(rect_num >= 0)
-            bg_color = rectangles[rect_num].color;
+        if(is_rect_here(i+18))
+            bg_color = rectangles.color;
         else 
             bg_color = RA8875_YELLOW;
         local_tft.drawChar(placeholder_x + 50, placeholder_y +50, placeholder_letters[i], RA8875_BLACK, bg_color, 5);
     }
 }
 
-int who_is_here(int section)
+bool is_rect_here(int section)
 {
-    int i;
-    for(i = 0; i<num_rect_visible; i++)
+    if(rectangles.section == section)
     {
-        if(rectangles[i].section == section)
-            {
-                Serial.println("rectange " + String(i) + " is in section " + String(section));
-                return i; 
-            }
+        return true; 
     }
-    return -1;
+    return false;
 }
 
 void shift_letter(int cur_section)
@@ -708,20 +608,14 @@ void shift_letter(int cur_section)
 
 int position_occupied(int section)
 {
-    int i; 
     Serial.println(rect_selected_num);
-    for(i = 0; i<num_rect_visible; i++)
+
+    if(rectangles.section == section)
     {
-        if(i != rect_selected_num)
-        {
-            if(rectangles[i].section == section)
-            {
-                Serial.print("next position occuppied. section: ");
-                return 1; 
-            }
-                
-        }
+        Serial.print("next position occuppied. section: ");
+        return 1; 
     }
+                
     Serial.println("next position not occupied");
     return 0;
 }
@@ -889,6 +783,8 @@ int waitForTouchorEncoderEvent(tsPoint_t * point)
                 last_action = last_action_none;
                 break;
         }
+        if(vol_encoder_triggered())
+            return 4;
     }
 
     /* Make sure this is really a touch event */

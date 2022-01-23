@@ -24,7 +24,7 @@ void blink_section_letters(void);
 void draw_placeholder_letters(void);
 void shift_letter(int cur_section);
 bool isNewRecToCome(int rect_selected_num);
-int who_is_here(int section);
+bool is_rect_here(int section);
 int position_occupied(int section);
 bool is_rect_puzzle_solved(void);
 void dissapearing_letters(void);

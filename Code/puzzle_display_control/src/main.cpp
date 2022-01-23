@@ -35,6 +35,8 @@ bool solved = false;
 // the current state
 int state;
 
+void main_state_machine();
+
 void setup()
 {
     Serial.begin(9600);
@@ -70,61 +72,67 @@ void setup()
 /**************************************************************************/
 int encoder_triggered = 0;
 int new_vol = 20;
+tsPoint_t raw;
 void loop()
 {
-tsPoint_t raw;
+    main_state_machine();
     
-    while(1)
+}
+
+
+void main_state_machine()
+{
+    switch(state)
     {
-        switch(state)
+    case 0:
+        if(!flagset)
         {
-        case 0:
-            if(!flagset)
-            {
-                mp3Player.loopFolder(ESA);
-                first_screen();
-                flagset = true;   
-            }
-            encoder_triggered = check_game_encoders();
 
-            if (encoder_triggered) //if(antenna applied)
-            {
-                state = 1;
-                flagset = false;
-            }
-            break;
-        case 1:
-            if(!flagset){
-                Serial.println("case 1");
-                mp3Player.loopFolder(ESA);
-                fill_display(BACKGROUND_COLOR);
-                sliding_bars(1);
-                sliding_bars(2);
-                sliding_bars(3);
-                flagset = true;
-            }
+            first_screen();
+            flagset = true;   
+        }
+        encoder_triggered = check_game_encoders();
 
-            encoder_triggered = check_game_encoders();
-            if (encoder_triggered)
-            {
-                solved = sliding_bars(encoder_triggered);
-            }
-            if(solved)
-            {
-                state = 2;
-                flagset = false;
-                solved = false;
-            }            
-            break;
+        if (encoder_triggered) //if(antenna applied)
+        {
+            state = 1;
+            flagset = false;
+        }
+        break;
+    case 1:
+        if(!flagset){
+            Serial.println("case 1");
+            mp3Player.loopFolder(ESA);
+            fill_display(BACKGROUND_COLOR);
+            sliding_bars(1);
+            sliding_bars(2);
+            sliding_bars(3);
+            flagset = true;
+        }
 
-        case 2:
-            if(!flagset){
-                mp3Player.loopFolder(Ferdi);
-                
-                init_rect();
-                flagset = true;
-            }
-            waitForTouchorEncoderEvent(&raw);
+        encoder_triggered = check_game_encoders();
+        if (encoder_triggered)
+        {
+            solved = sliding_bars(encoder_triggered);
+        }
+        if(solved)
+        {
+            state = 2;
+            flagset = false;
+            solved = false;
+        }            
+        break;
+
+    case 2:
+        if(!flagset){
+            mp3Player.loopFolder(Ferdi);
+            
+            init_rect();
+            flagset = true;
+        }
+        
+        if(waitForTouchorEncoderEvent(&raw) < 4)
+        {
             solved = rectangles_game(raw);  
             
             if(solved)
@@ -132,23 +140,22 @@ tsPoint_t raw;
                 state = 3;
                 flagset = false;
             }
-            break;
-
-            case 3:
-                if(!flagset){
-                    mp3Player.loopFolder(Ferdi);
-                    
-                    final_screen();
-                    flagset = true;
-                    mp3Player.stop();
-                }
-                break;
         }
+        break;
 
-        // check if volume has been changed (by triggering volume controller)
-        if(check_vol_encoder(&new_vol))
-        {
-            mp3Player.volume(new_vol);
+    case 3:
+        if(!flagset){
+            mp3Player.loopFolder(Ferdi);
+            
+            final_screen();
+            flagset = true;
+            mp3Player.stop();
         }
+        break;
+    }
+    // check if volume has been changed (by triggering volume controller)
+    if(check_vol_encoder(&new_vol))
+    {
+        mp3Player.volume(new_vol);
     }
 }
