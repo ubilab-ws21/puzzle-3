@@ -24,9 +24,9 @@
 
 #define X_Y_RATIO double(MAX_Y_VAL_1-MIN_Y_VAL_1)/double(MAX_X_VAL-MIN_X_VAL)
 
-#define REC_MIN_Y 60
+#define REC_MIN_Y 80
 #define REC_SIZE_X 133
-#define REC_SIZE_Y 105
+#define REC_SIZE_Y 100
 
 #define NUM_SECTIONS_X 6
 #define NUM_SECTIONS_Y 4
@@ -55,6 +55,13 @@ enum
     last_action_encoder2,
     last_action_encoder3,
     last_action_touch
+};
+
+enum{
+    NONE_SECTION = 0,
+    SHOW_SECTION,
+    RESET_SECTION, 
+    LETTER_SECTION
 };
 
 int last_action = last_action_none;
@@ -145,9 +152,13 @@ void init_rect()
     local_tft.drawFastHLine(0, REC_MIN_Y-1, SCREEN_SIZE_X, RA8875_BLUE);
     local_tft.textMode();
     local_tft.textTransparent(RA8875_RED);
-    local_tft.textEnlarge(1);
-    local_tft.textSetCursor(350, 10);
-    local_tft.textWrite("Ferdi's Login Space");
+    local_tft.textEnlarge(0);
+    local_tft.textSetCursor(330, 10);
+    local_tft.textWrite("Ferdi's");
+    local_tft.textSetCursor(320, 30);
+    local_tft.textWrite("Login");
+    local_tft.textSetCursor(320, 45);
+    local_tft.textWrite("Space");
     local_tft.graphicsMode();
     delay(1000);
 
@@ -198,13 +209,19 @@ void draw_showbutton(int counter)
 
     local_tft.fillRect(0, 0, REC_SIZE_X*2, REC_MIN_Y, RA8875_GREEN);
     local_tft.drawRect(0, 0, REC_SIZE_X*2, REC_MIN_Y, 0x07D0);
+
+    local_tft.fillRect(REC_SIZE_X*4, 0, REC_SIZE_X*2, REC_MIN_Y, RA8875_GREEN);
+    local_tft.drawRect(REC_SIZE_X*4, 0, REC_SIZE_X*2, REC_MIN_Y, 0x07D0);
+
     local_tft.textMode();
     local_tft.textTransparent(RA8875_RED);
-    local_tft.textEnlarge(1);
-    local_tft.textSetCursor(80, 10);
+    local_tft.textEnlarge(2);
+    local_tft.textSetCursor(80, 20);
     local_tft.textWrite(string_buffer);
-    local_tft.textSetCursor(110, 10);
+    local_tft.textSetCursor(120, 20);
     local_tft.textWrite("/ 4");
+    local_tft.textSetCursor(600, 20);
+    local_tft.textWrite("RESET");
     local_tft.graphicsMode();
 }
 
@@ -377,62 +394,23 @@ bool rectangles_game(tsPoint_t touch_raw)
         //Calcuate the real X/Y position based on the calibration matrix 
         calibrateTSPoint(&calibrated, &touch_raw, &local_matrix);
 
-        if(calibrated.y < REC_MIN_Y && calibrated.x < 2*REC_SIZE_X)
+        int touch_space = what_was_touched(calibrated.x, calibrated.y);
+        switch(touch_space)
         {
-            //show letters. 
+        case NONE_SECTION:
+            break;
+        case SHOW_SECTION:
             if(random_letter_generation(false))
             {
-                int section; 
-                int letter_bg_color;
-                int char_x, char_y;
-                bool valid_section;
-                for(section=0; section<18; section++)
-                {
-                    valid_section = is_section_with_letter(section);
-                    if(valid_section)
-                    {
-                        char mychar = get_letter(section);
-                        int rect_num = who_is_here(section);
-                        if (rect_num == -1)
-                        {
-                            letter_bg_color = BACKGROUND_COLOR;
-                        }
-                        else
-                        {
-                            letter_bg_color = rectangles[rect_num].color;
-                        }
-                    section_to_xy(section, &char_x, &char_y);
-                    local_tft.drawChar(char_x+50, char_y+50, mychar, RA8875_BLACK, letter_bg_color , 5);
-                    }
-                }
-                delay(1000);
-                for(section=0; section<18; section++)
-                {   
-                    valid_section = is_section_with_letter(section);
-                    if(valid_section)
-                    {
-                        char mychar = get_letter(section);
-                        int rect_num = who_is_here(section);
-                        int letter_color; 
-                        if (rect_num == -1)
-                        {
-                            letter_color = BACKGROUND_COLOR;
-                            letter_bg_color = BACKGROUND_COLOR;
-                        }
-                        else
-                        {
-                            letter_color = rectangles[rect_num].color;
-                            letter_bg_color = rectangles[rect_num].color;
-                        }
-                        
-                        section_to_xy(section, &char_x, &char_y);
-                        local_tft.drawChar(char_x + 50, char_y + 50, mychar, letter_color, letter_bg_color, 5);
-                    }
-                }
+                //show letters. 
+                blink_section_letters();
             }
-        }
-        else
-        {
+            break;
+        case RESET_SECTION:
+            // this will result in resetting the game
+            function_called_count = 5;
+            break;
+        case LETTER_SECTION:
             int section = get_section(calibrated.x, calibrated.y);
 
             int i; 
@@ -476,6 +454,7 @@ bool rectangles_game(tsPoint_t touch_raw)
 
                 }
             }
+            break;
         }
         last_action = last_action_none;
     }
@@ -492,6 +471,23 @@ bool rectangles_game(tsPoint_t touch_raw)
     }
     //puzzle not solved
     return 0;
+}
+
+int what_was_touched(int x, int y)
+{
+    if(y < REC_MIN_Y)
+    {
+        if(x < 2*REC_SIZE_X)
+            return SHOW_SECTION;
+        else if(x > 4*REC_SIZE_X)
+            return RESET_SECTION;
+        else 
+            return NONE_SECTION;
+    }
+    else
+    {
+        return LETTER_SECTION;
+    }
 }
 
 bool isNewRecToCome(int rect_selected_num)
@@ -615,6 +611,58 @@ void set_letter(char letter){
 
 }
 
+void blink_section_letters()
+{
+    static Adafruit_RA8875 local_tft = gettft();
+    int section; 
+    int letter_bg_color;
+    int char_x, char_y;
+    bool valid_section;
+    for(section=0; section<18; section++)
+    {
+        valid_section = is_section_with_letter(section);
+        if(valid_section)
+        {
+            char mychar = get_letter(section);
+            int rect_num = who_is_here(section);
+            if (rect_num == -1)
+            {
+                letter_bg_color = BACKGROUND_COLOR;
+            }
+            else
+            {
+                letter_bg_color = rectangles[rect_num].color;
+            }
+        section_to_xy(section, &char_x, &char_y);
+        local_tft.drawChar(char_x+50, char_y+50, mychar, RA8875_BLACK, letter_bg_color , 5);
+        }
+    }
+    delay(1500);
+    for(section=0; section<18; section++)
+    {   
+        valid_section = is_section_with_letter(section);
+        if(valid_section)
+        {
+            char mychar = get_letter(section);
+            int rect_num = who_is_here(section);
+            int letter_color; 
+            if (rect_num == -1)
+            {
+                letter_color = BACKGROUND_COLOR;
+                letter_bg_color = BACKGROUND_COLOR;
+            }
+            else
+            {
+                letter_color = rectangles[rect_num].color;
+                letter_bg_color = rectangles[rect_num].color;
+            }
+            
+            section_to_xy(section, &char_x, &char_y);
+            local_tft.drawChar(char_x + 50, char_y + 50, mychar, letter_color, letter_bg_color, 5);
+        }
+    }
+}
+
 void draw_placeholder_letters()
 {
     static Adafruit_RA8875 local_tft = gettft();
@@ -691,68 +739,7 @@ bool is_rect_puzzle_solved()
     }
     return true;
 }
-/*
-void dissapearing_letters()
-{
-    static tsMatrix_t local_matrix = gettsMatrix();
-    static Adafruit_RA8875 local_tft = gettft();
 
-    if(!initialized_game)
-    {
-        Serial.println("Initializing game");
-        local_tft.setFont(&FreeSerifBoldItalic9pt7b);
-
-        letter.x = 400;
-        letter.y = 240;
-        calibrateTSPoint(&calibrated, &letter, &local_matrix );
-        Serial.println(calibrated.x);
-        Serial.println(calibrated.y);
-        char mychar = 'A';
-        local_tft.drawChar(letter.x,letter.y, mychar, RA8875_BLUE, BACKGROUND_COLOR, 5);
-
-        midpoint.x = letter.x + LETTER_OFFSET;
-        midpoint.y = letter.y + LETTER_OFFSET;
-        initialized_game = 1;
-    }    
-
-    tsPoint_t raw;
-    tsPoint_t calibrated;
-
-    int hit = 0;
-    while(hit == 0)
-    {
-        // Wait around for a touch event 
-        waitForTouchEvent(&raw);
-
-        //Calcuate the real X/Y position based on the calibration matrix 
-        calibrateTSPoint(&calibrated, &raw, &local_matrix );
-
-        Serial.println("Calibrated letter: ");
-        Serial.println(letter.x);
-        Serial.println(letter.y);    
-
-        if(abs(calibrated.x - midpoint.x) < 40 && abs(calibrated.y - midpoint.y) < 40)
-        {
-            Serial.println("Hit button");
-            local_tft.drawChar(letter.x,letter.y, 'A', BACKGROUND_COLOR, RA8875_WHITE, 5);
-            initialized_game = 0;
-            hit = 1;
-        }
-        else
-        { 
-            Serial.println("Failed: ");
-            local_tft.drawChar(letter.x,letter.y, 'A', RA8875_RED, RA8875_WHITE,5);
-            delay(300);
-            local_tft.drawChar(letter.x,letter.y, 'A', RA8875_BLUE, RA8875_WHITE,5);
-        }
-        Serial.print("touchscreen sensed at: ");
-        Serial.println(calibrated.x);
-        Serial.println(calibrated.y);
-        // Draw a single pixel at the calibrated point 
-        local_tft.fillCircle(calibrated.x, calibrated.y, 3, RA8875_BLACK);
-    }
-}
-*/
 bool sliding_bars(int encoder_num)
 {
     static Adafruit_RA8875 local_tft = gettft();
