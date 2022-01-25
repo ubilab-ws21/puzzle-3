@@ -53,7 +53,35 @@ After the puzzle was solved, the screen changes again and shows the code which i
 
 ## MQTT Topics/Specification
 
-Topic: 3/gamecontrol
+| Topic | Description | Payload | Reset-Value | Subscriber | Publisher |
+| :--:	| :---------: | :------:| :---------: |:--------: | :--------:|
+| 3/gamecontrol| Control the radio: which puzzle state is currently in play | Enum(Gamecontrol) | idle | radio, operator | radio, operator | 
+| 3/antenna/orientation | gives information if the angle of the antenna correct | boolean | false | operator | radio |
+| 3/map/knob1 | gives information whether knob1 is in correct position | boolean | false | operator | radio |
+| 3/map/knob2 | gives information whether knob2 is in correct position | boolean | false | operator | radio |
+| 3/map/knob3 | gives information whether knob3 is in correct position | boolean | false | operator | radio |
+| 3/touchgame/trialCount | gives information about the trails the group already had | int | 0 | operator | radio |
+| 3/touchgame/displayTime | the game can either be set in easy or hard mode | boolean | false | radio | operator |
+
+3/gamecontrol maybe splitted to received and sended topic. For now we wait for feedback by the operator
+
+
+| Enum(gameControl) | Description | Subscriber | Publisher |
+| :---------------: | :---------: | :--------: | :-------: |
+| idle | Radiopuzzle is waiting in idle mode to be started by operator | radio | operator |
+| antenna | antenna game is started by operator | radio | operator |
+| antennaFinished | antenna game is finished | operator | radio |
+| map | map game is started by operator | radio | operator |
+| mapFinished | map game is finished | operator | radio |
+| touchgame | touchgame is started by operator | radio | operator |
+| touchgameFinished | touchgame is finished | operator | radio |
+| finished | radio game is finished | operator | radio |
+
+| int(trailCount) | Description |
+| :-------------: | :---------: |
+| ++ | everytime the game is failed, the trialcounter is increased |
+
+#Topic: 3/gamecontrol
 
 Description: Control the radio: which puzzle state is currently in play
 
@@ -63,9 +91,9 @@ Reset-Value: Idle
 
 Enum Values:
 
-- Idle: Radio puzzle is waiting in Idle mode to be started
-	Operator: set the third puzzle in idle mode
-	radio: receive to stay in idle mode
+# Idle: Radio puzzle is waiting in Idle mode to be started
+- Publisher: Operator: set the third puzzle in idle mode
+- Subscriber: Radio: receive to stay in idle mode
 
 - antenna: antenna game is started
 	Operator: start the first part of the puzzle
@@ -92,15 +120,15 @@ Enum Values:
 	Operator: set the third puzzle in finished mode
 	radio: receive to get in finished mode
 
-Topic: 3/antenna/plugStatus
+<!--Topic: 3/antenna/plugStatus
 
-Description: gives information about the antenna
+#Description: gives information about the antenna
 
-Payload: boolean
+% Payload: boolean
 
 Reset-Value: false
 	Radio: update if antenna is plugged in
-	Operator: receive updates on the antenna
+	Operator: receive updates on the antenna-->
 	
 Topic: 3/antenna/orientation
 
@@ -141,7 +169,25 @@ Reset-Value: false
 	Radio: update if the the third knob/color reaches/leaves the correct postion
 	Operator: receive updates on the third knob
 
-Topic: 3/touchgame
+Topic: 3/touchgame/trialCount
+
+Description: Sends the number of trials to the operator 
+
+Payload: int
+
+Reset-Value is 0
+	Radio: Update the trial number after each failed attempt
+	Operator: receive updates on the failed attempts
+	
+Topic: 3/touchgame/displayTime
+
+Description: Operator sets the time to easy or hard mode
+
+Payload: boolean
+
+Reset-Value: false
+	Radio: receive updates on mode setting
+	Operator: set mode for puzzle
 
 Description: needs some discussion what should be updated to the operator
 
@@ -155,13 +201,5 @@ Software game: We only have one rectangle. By placing the blue rectangle on a le
 
 
 Next Tasks - 23.01
-- Alles zusammen bauen (außer Platine)
-- Teile Anmalen 
-- Encoder an Plexiglas festmachen (Verkabelung dahin) 
 - Driver Board an case anbringen
-- Landkarte in Auftrag geben 
-- Displayhousing fix montieren
-- DisplayDriver Anbindung. (Pins Umlöten, Anbindung konstruieren)
-- plantine planen und Grundform schneiden
-- geteilte pull-ups und Wiederstände testen.
-- Audios neu aufnehmen
+- MQTT auf ESP32 fertig implementieren
