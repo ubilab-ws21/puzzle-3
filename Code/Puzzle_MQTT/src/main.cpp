@@ -1,10 +1,5 @@
-#include <Arduino.h>
-#include <WiFi.h>
-#include <ESPmDNS.h>
-#include <ArduinoOTA.h>
-#include <PubSubClient.h>
-#include <ArduinoJson.h>
 #include <Puzzle.h>
+#include <privateInfo.h>
 
 
 
@@ -64,7 +59,7 @@ void setup() {
   if (mqtt.connect(NAME)) {
     Serial.println("Connected to MQTT server");
     // Subscribe to a certain topic
-    mqtt.subscribe("myPuzzle/set");
+    mqtt.subscribe("/3");
   } else {
     Serial.println("Cannot connect to MQTT server");
   }
@@ -81,12 +76,19 @@ void loop() {
   mqtt.loop();
   // Change state from idle to active afterwards cycle between
   // solved and active
-  if (puzzleState == idle) {
-    // puzzleActive();
-  } else if (puzzleState == active) {
-    // puzzleSolved();
-  } else {
-    // puzzleActive();
+
+
+  if (gameState == idle) {
+     puzzleIdle();
+  }
+  else if (gameState == antenna) {
+     puzzleAntenna();
+  } 
+  else if(gameState == mapgame) {
+     puzzleMap();
+  }
+  else if(gameState == touchgame){
+    puzzleTouchgame();
   }
 
   // If at least one byte is available over serial
@@ -131,8 +133,12 @@ const char * handleMsg(const char * msg) {
   // strcmp returns zero on a match
   if (strcmp(msg, "solved") == 0) {
     puzzleSolved();
-  } else if (strcmp(msg, "active") == 0) {
-    puzzleActive();
+  } else if (strcmp(msg, "antenna") == 0) {
+    puzzleAntenna();
+  } else if (strcmp(msg, "mapgame") == 0) {
+    puzzleMap();
+  } else if (strcmp(msg, "touchgame") == 0) {
+    puzzleTouchgame();
   } else if (strcmp(msg, "idle") == 0) {
     puzzleIdle();
   } else {
@@ -145,8 +151,9 @@ const char * handleMsg(const char * msg) {
    Puzzle changes to idle state
 */
 void puzzleIdle() {
-  puzzleState = idle;
+  gameState = idle;
   // Code to idle puzzle ...
+  //Serial.println("We are now in idle state");
   puzzleStateChanged();
 }
 
@@ -154,17 +161,39 @@ void puzzleIdle() {
    Puzzle changes to solved state
 */
 void puzzleSolved() {
-  puzzleState = solved;
+  gameState = solved;
   // Code to set puzzle into solved state ...
+  Serial.println("We are now in solved state");
   puzzleStateChanged();
 }
 
 /*
-   Puzzle changes to active state
+   Puzzle changes to antenna game state
 */
-void puzzleActive() {
-  puzzleState = active;
+void puzzleAntenna() {
+  gameState = antenna;
   // Code to set puzzle into active state ...
+  Serial.println("We are now in Antennagame state");
+  puzzleStateChanged();
+}
+
+/*
+   Puzzle changes to map game state
+*/
+void puzzleMap() {
+  gameState = mapgame;
+  // Code to set puzzle into active state ...
+  Serial.println("We are now in Mapgame state");
+  puzzleStateChanged();
+}
+
+/*
+   Puzzle changes to touchgame game state
+*/
+void puzzleTouchgame() {
+  gameState = touchgame;
+  // Code to set puzzle into active state ...
+  Serial.println("We are now in Touchgame state");
   puzzleStateChanged();
 }
 
@@ -173,12 +202,12 @@ void puzzleActive() {
    puzzle changed
 */
 void puzzleStateChanged() {
-  Serial.printf("Puzzle state changed to: %s\n", puzzleStateToStr(puzzleState));
+  //Serial.printf("Puzzle state changed to: %s\n", puzzleStateToStr(gameState));
 
   // Convert puzzlestate into JSON dict
   JsonObject obj = dict.to<JsonObject>();
   obj.clear();
-  obj["state"] = puzzleStateToStr(puzzleState);
+  obj["state"] = puzzleStateToStr(gameState);
   // Serialize into msg cstring
   serializeJson(obj, msg);
 
@@ -199,11 +228,13 @@ void puzzleStateChanged() {
 /*
    Convert the ENUM to a string
 */
-const char * puzzleStateToStr(PuzzleState puzzle) {
+const char * puzzleStateToStr(gamecontrol puzzle) {
   switch (puzzle) {
-    case active: return "active";
+    case antenna: return "antenna";
     case idle: return "idle";
     case solved: return "solved";
+    case mapgame: return "map";
+    case touchgame: return "touchgame";
     default: return "Unknown state";
   }
 }
