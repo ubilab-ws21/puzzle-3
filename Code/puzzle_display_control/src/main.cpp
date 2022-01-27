@@ -14,7 +14,8 @@
 #define ESA 1       // folder number of Emergency Message
 #define Ferdi 2     // folder number of Radio station message 
 #define goodNews 3  // folder number of good News Radio
-
+#define noise 10    // folder number of noise
+#define rickroll 99 // default.
 //#include "Fonts/FreeSerfBoldItalic9pt7b.h"
 
 /**************************************************************************/
@@ -58,7 +59,7 @@ void setup()
     */
     mp3Player.EQ(DFPLAYER_EQ_NORMAL);
     // Volume 1 to 30
-    mp3Player.volume(20);
+    mp3Player.volume(15);
 
     init_display();
     init_encoder();
@@ -71,6 +72,7 @@ void setup()
 */
 /**************************************************************************/
 int encoder_triggered = 0;
+bool ant_correct = false;
 int new_vol = 20;
 tsPoint_t raw;
 void loop()
@@ -87,13 +89,15 @@ void main_state_machine()
     case 0:
         if(!flagset)
         {
-
+            Serial.println("case 0");
+            mp3Player.loopFolder(noise);
             first_screen();
             flagset = true;   
         }
-        encoder_triggered = check_game_encoders();
+        
+        ant_correct = check_ant_encoder();
 
-        if (encoder_triggered) //if(antenna applied)
+        if (ant_correct) //if(antenna applied)
         {
             state = 1;
             flagset = false;
@@ -104,17 +108,13 @@ void main_state_machine()
             Serial.println("case 1");
             mp3Player.loopFolder(ESA);
             fill_display(BACKGROUND_COLOR);
-            sliding_bars(1);
-            sliding_bars(2);
-            sliding_bars(3);
+            init_sliding_bars();
             flagset = true;
         }
+        encoder_triggered = waitForTouchorEncoderEvent(&raw);
 
-        encoder_triggered = check_game_encoders();
-        if (encoder_triggered)
-        {
-            solved = sliding_bars(encoder_triggered);
-        }
+        solved = sliding_bars(encoder_triggered, raw, 0);
+
         if(solved)
         {
             state = 2;
@@ -145,11 +145,11 @@ void main_state_machine()
 
     case 3:
         if(!flagset){
-            mp3Player.loopFolder(Ferdi);
-            
+            // oder nur playFolder    
+            mp3Player.loopFolder(goodNews);        
             final_screen();
             flagset = true;
-            mp3Player.stop();
+            //mp3Player.stop();
         }
         break;
     }

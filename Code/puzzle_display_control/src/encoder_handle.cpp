@@ -12,6 +12,8 @@ Encoders encoder[NUM_ENCODERS_DEFINED];
 
 Encoders encoder_vol;
 
+Encoders encoder_ant;
+
 void init_encoder()
 {
 
@@ -23,11 +25,11 @@ void init_encoder()
 	
     if(NUM_ENCODERS_DEFINED > 1)
     {
-        encoder[1]._encoder.attachSingleEdge(17, 16);
+        encoder[1]._encoder.attachSingleEdge(26, 25);
     }
     if(NUM_ENCODERS_DEFINED > 2)
     {
-        encoder[2]._encoder.attachSingleEdge(26, 25);
+        encoder[2]._encoder.attachSingleEdge(17, 16);
     }
 		
     int i;
@@ -46,10 +48,23 @@ void init_encoder()
 
 
     // init volume encoder
+    encoder_ant._encoder.attachSingleEdge(34, 35);
+
+    // set starting count value after attaching
+    encoder_ant._encoder.setCount(0);
+
+    // clear the encoder's raw count and set the tracked count to zero
+    //encoder2.clearCount();
+    encoder_ant.encoder_value = 0;
+    encoder_ant.old_value = 0;
+
+
+
+    // init volume encoder
     encoder_vol._encoder.attachSingleEdge(22, 21);
 
     // set starting count value after attaching
-    encoder_vol._encoder.setCount(20);
+    encoder_vol._encoder.setCount(10);
 
     // clear the encoder's raw count and set the tracked count to zero
     //encoder2.clearCount();
@@ -99,6 +114,26 @@ bool check_vol_encoder(int* new_volume)
     return false;
 }
 
+bool check_ant_encoder()
+{
+    if (encoder_ant.encoder_value !=  encoder_ant._encoder.getCount())
+        {
+            if(encoder_ant._encoder.getCount() >= -10 && encoder_ant._encoder.getCount() < 10)
+            {
+                encoder_ant.encoder_value = encoder_ant._encoder.getCount();
+                Serial.println("Encoder ant count  = " + String((int32_t)encoder_ant.encoder_value));
+            }
+            else
+            {
+                encoder_ant._encoder.setCount(encoder_ant.encoder_value);
+            }
+                   
+        }
+    if(encoder_ant.encoder_value > 5)
+            return true;
+    return false;
+}
+
 bool vol_encoder_triggered()
 {
     if (encoder_vol.encoder_value !=  encoder_vol._encoder.getCount())
@@ -110,8 +145,9 @@ bool vol_encoder_triggered()
 int encoder_get_value(int encoder_num)
 {
     if(encoder_num <= NUM_ENCODERS_DEFINED && encoder_num > 0)
+    {
         return encoder[encoder_num-1].encoder_value;
-   
+    }   
     return -1;
 }
 
