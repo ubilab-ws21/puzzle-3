@@ -96,6 +96,8 @@ static int cur_frequency = 1332;
 static char dest[5] = "133";
 static char last[2] = "2";
 
+bool removed = false;
+
 void init_rect()
 {
     static tsMatrix_t local_matrix = gettsMatrix();
@@ -262,7 +264,12 @@ bool rectangles_game(tsPoint_t touch_raw)
     // if last action was an encoder action, i.e. either of the two first encoders was used:
     if(last_action >= 1 && last_action <= 2)
     {   
-        remove_section_letters();
+        if(!removed)
+        {
+            remove_section_letters();
+            removed = true; 
+        }
+        
         Serial.print("last action = ");
         Serial.println(last_action);
         // the last action matches the current encode number. 
@@ -369,6 +376,12 @@ bool rectangles_game(tsPoint_t touch_raw)
     }
     else if(last_action == last_action_touch)
     {
+        if(!removed)
+        {
+            remove_section_letters();
+            removed = true; 
+        }
+
         tsPoint_t calibrated;
         //Calcuate the real X/Y position based on the calibration matrix 
         calibrateTSPoint(&calibrated, &touch_raw, &local_matrix);
@@ -407,12 +420,12 @@ bool rectangles_game(tsPoint_t touch_raw)
                     int placeholder_x, placeholder_y;
                     section_to_xy(free_placeholer_num+18, &placeholder_x, &placeholder_y);
 
-                    local_tft.fillRect(rectangles.tr_corner.x, rectangles.tr_corner.y, REC_SIZE_X, REC_SIZE_Y, BACKGROUND_COLOR);
-
+                    //local_tft.fillRect(rectangles.tr_corner.x, rectangles.tr_corner.y, REC_SIZE_X, REC_SIZE_Y, BACKGROUND_COLOR);
+                    /*
                     rectangles.tr_corner.x = placeholder_x;
                     rectangles.tr_corner.y = placeholder_y;
                     rectangles.color = color;
-                    rectangles.section = free_placeholer_num+18;
+                    rectangles.section = free_placeholer_num+18;*/
 
                     local_tft.fillRect(rectangles.tr_corner.x, rectangles.tr_corner.y, REC_SIZE_X, REC_SIZE_Y, rectangles.color);
                     
@@ -421,7 +434,7 @@ bool rectangles_game(tsPoint_t touch_raw)
                         char mychar = get_letter(section);
                         shift_letter(section);
                         Serial.println(mychar);
-                        local_tft.drawChar(placeholder_x + 50, placeholder_y + 50, mychar, RA8875_BLACK, rectangles.color , 5);
+                        local_tft.drawChar(placeholder_x + 50, placeholder_y + 50, mychar, RA8875_BLACK, RA8875_YELLOW , 5);
                     }
                 }
 
