@@ -36,6 +36,9 @@
 #define SCREEN_SIZE_X 800
 #define SCREEN_SIZE_Y 480
 
+#define SELECT_FIELD_X 600
+#define SELECT_FIELD_Y 100
+
 unsigned long last_touch_time;
 
 
@@ -84,7 +87,11 @@ rect letter_place[6];
 
 bool section0free = 1;
 
+bool letters_visible = false;
+
 static int function_called_count = 0;
+
+static int cur_frequency = 1332; 
 
 void init_rect()
 {
@@ -170,7 +177,8 @@ void init_rect()
         local_tft.drawRect(letter_place[i].tr_corner.x, letter_place[i].tr_corner.y, REC_SIZE_X, REC_SIZE_Y-1, letter_place[i].color);
     }
 
-    draw_showbutton(0);
+    //draw_showbutton(0);
+    draw_reset_button();
 
     local_tft.fillRect(rectangles.tr_corner.x, rectangles.tr_corner.y, REC_SIZE_X, REC_SIZE_Y, rectangles.color);
     
@@ -181,7 +189,10 @@ void init_rect()
         valid_sections[i] = orig_valid_sections[i];
     }
 
-    random_letter_generation(true);   
+    random_letter_generation(true);
+
+    // show all letters
+    blink_section_letters(false); 
 }
 
 void draw_placeholders()
@@ -221,6 +232,20 @@ void draw_showbutton(int counter)
     local_tft.graphicsMode();
 }
 
+void draw_reset_button()
+{
+    static Adafruit_RA8875 local_tft = gettft();
+
+    local_tft.fillRect(REC_SIZE_X*4, 0, REC_SIZE_X*2, REC_MIN_Y, RA8875_GREEN);
+    local_tft.textMode();
+
+    local_tft.textSetCursor(600, 20);
+    local_tft.textTransparent(RA8875_RED);
+    local_tft.textEnlarge(2);
+    local_tft.textWrite("RESET");
+    local_tft.graphicsMode();
+}
+
 bool rectangles_game(tsPoint_t touch_raw)
 {
     static Adafruit_RA8875 local_tft = gettft();
@@ -233,9 +258,10 @@ bool rectangles_game(tsPoint_t touch_raw)
 
     // if last action was an encoder action, i.e. either of the two first encoders was used:
     if(last_action >= 1 && last_action <= 2)
-    {
+    {   
+        remove_section_letters();
         Serial.print("last action = ");
-        Serial.print(last_action);
+        Serial.println(last_action);
         // the last action matches the current encode number. 
         int cur_encoder_num = last_action;
 
@@ -349,13 +375,14 @@ bool rectangles_game(tsPoint_t touch_raw)
         {
         case NONE_SECTION:
             break;
-        case SHOW_SECTION:
+        /*case SHOW_SECTION:
             if(random_letter_generation(false))
             {
                 //show letters. 
                 blink_section_letters();
             }
             break;
+        */
         case RESET_SECTION:
             // this will result in resetting the game
             function_called_count = 5;
@@ -363,46 +390,38 @@ bool rectangles_game(tsPoint_t touch_raw)
         case LETTER_SECTION:
             int section = get_section(calibrated.x, calibrated.y);
 
-            int i; 
-            for(i = 0; i< num_rect_visible; i++)
+            if(rectangles.section == section)
             {
-                if(rectangles.section == section)
+                Serial.println("section");
+                Serial.println(section);
+                x = rectangles.tr_corner.x;
+                y = rectangles.tr_corner.y;
+                color = rectangles.color;
+                section = rectangles.section;
+
+                if(section < 18)
                 {
-                    Serial.println("rectancle was touched! no: ");
-                    Serial.println(i);
-                    Serial.println("section");
-                    Serial.println(section);
-                    rect_selected_num = i;
-                    x = rectangles.tr_corner.x;
-                    y = rectangles.tr_corner.y;
-                    color = rectangles.color;
-                    section = rectangles.section;
+                    int placeholder_x, placeholder_y;
+                    section_to_xy(free_placeholer_num+18, &placeholder_x, &placeholder_y);
 
-                    if(section < 18)
+                    local_tft.fillRect(rectangles.tr_corner.x, rectangles.tr_corner.y, REC_SIZE_X, REC_SIZE_Y, BACKGROUND_COLOR);
+
+                    rectangles.tr_corner.x = placeholder_x;
+                    rectangles.tr_corner.y = placeholder_y;
+                    rectangles.color = color;
+                    rectangles.section = free_placeholer_num+18;
+
+                    local_tft.fillRect(rectangles.tr_corner.x, rectangles.tr_corner.y, REC_SIZE_X, REC_SIZE_Y, rectangles.color);
+                    
+                    if(is_section_with_letter(section))
                     {
-                        int placeholder_x, placeholder_y;
-                        section_to_xy(free_placeholer_num+18, &placeholder_x, &placeholder_y);
-                        Serial.println("fill rect");
-
-                        local_tft.fillRect(rectangles.tr_corner.x, rectangles.tr_corner.y, REC_SIZE_X, REC_SIZE_Y, BACKGROUND_COLOR);
-
-                        rectangles.tr_corner.x = placeholder_x;
-                        rectangles.tr_corner.y = placeholder_y;
-                        rectangles.color = color;
-                        rectangles.section = free_placeholer_num+18;
-
-                        local_tft.fillRect(rectangles.tr_corner.x, rectangles.tr_corner.y, REC_SIZE_X, REC_SIZE_Y, rectangles.color);
-                        
-                        if(is_section_with_letter(section)) //&& color == RA8875_RED)
-                        {
-                            char mychar = get_letter(section);
-                            shift_letter(section);
-                            Serial.println(mychar);
-                            local_tft.drawChar(placeholder_x + 50, placeholder_y + 50, mychar, RA8875_BLACK, rectangles.color , 5);
-                        }
+                        char mychar = get_letter(section);
+                        shift_letter(section);
+                        Serial.println(mychar);
+                        local_tft.drawChar(placeholder_x + 50, placeholder_y + 50, mychar, RA8875_BLACK, rectangles.color , 5);
                     }
-
                 }
+
             }
             break;
         }
@@ -519,53 +538,95 @@ char get_letter(int section)
     return letters[section];
 }
 
-void blink_section_letters()
+void remove_section_letters()
+{
+    static Adafruit_RA8875 local_tft = gettft();
+    int section; 
+    bool valid_section;
+    int letter_bg_color;
+    int char_x, char_y;
+    for(section=0; section<18; section++)
+        {   
+            valid_section = is_section_with_letter(section);
+            if(valid_section)
+            {
+                char mychar = get_letter(section);
+                int letter_color; 
+                if (!is_rect_here(section))
+                {
+                    letter_color = BACKGROUND_COLOR;
+                    letter_bg_color = BACKGROUND_COLOR;
+                }
+                else
+                {
+                    letter_color = rectangles.color;
+                    letter_bg_color = rectangles.color;
+                }
+                
+                section_to_xy(section, &char_x, &char_y);
+                local_tft.drawChar(char_x + 50, char_y + 50, mychar, letter_color, letter_bg_color, 5);
+            }
+        }
+        letters_visible = false;
+}
+
+void blink_section_letters(bool blink)
 {
     static Adafruit_RA8875 local_tft = gettft();
     int section; 
     int letter_bg_color;
     int char_x, char_y;
     bool valid_section;
-    for(section=0; section<18; section++)
+    bool was_visible = letters_visible;
+    if(!letters_visible)
     {
-        valid_section = is_section_with_letter(section);
-        if(valid_section)
+        for(section=0; section<18; section++)
         {
-            char mychar = get_letter(section);
-            if (!is_rect_here(section))
+            valid_section = is_section_with_letter(section);
+            if(valid_section)
             {
-                letter_bg_color = BACKGROUND_COLOR;
-            }
-            else
-            {
-                letter_bg_color = rectangles.color;
-            }
-        section_to_xy(section, &char_x, &char_y);
-        local_tft.drawChar(char_x+50, char_y+50, mychar, RA8875_BLACK, letter_bg_color , 5);
-        }
-    }
-    delay(1500);
-    for(section=0; section<18; section++)
-    {   
-        valid_section = is_section_with_letter(section);
-        if(valid_section)
-        {
-            char mychar = get_letter(section);
-            int letter_color; 
-            if (!is_rect_here(section))
-            {
-                letter_color = BACKGROUND_COLOR;
-                letter_bg_color = BACKGROUND_COLOR;
-            }
-            else
-            {
-                letter_color = rectangles.color;
-                letter_bg_color = rectangles.color;
-            }
-            
+                char mychar = get_letter(section);
+                if (!is_rect_here(section))
+                {
+                    letter_bg_color = BACKGROUND_COLOR;
+                }
+                else
+                {
+                    letter_bg_color = rectangles.color;
+                }
             section_to_xy(section, &char_x, &char_y);
-            local_tft.drawChar(char_x + 50, char_y + 50, mychar, letter_color, letter_bg_color, 5);
+            local_tft.drawChar(char_x+50, char_y+50, mychar, RA8875_BLACK, letter_bg_color , 5);
+            }
         }
+        letters_visible = true;
+    }
+    if(blink || was_visible)
+    {
+        if(blink)
+            delay(1500);
+        for(section=0; section<18; section++)
+        {   
+            valid_section = is_section_with_letter(section);
+            if(valid_section)
+            {
+                char mychar = get_letter(section);
+                int letter_color; 
+                if (!is_rect_here(section))
+                {
+                    letter_color = BACKGROUND_COLOR;
+                    letter_bg_color = BACKGROUND_COLOR;
+                }
+                else
+                {
+                    letter_color = rectangles.color;
+                    letter_bg_color = rectangles.color;
+                }
+                
+                section_to_xy(section, &char_x, &char_y);
+                local_tft.drawChar(char_x + 50, char_y + 50, mychar, letter_color, letter_bg_color, 5);
+            }
+        }
+        letters_visible = false;
     }
 }
 
@@ -634,7 +695,55 @@ bool is_rect_puzzle_solved()
     return true;
 }
 
-bool sliding_bars(int encoder_num)
+void init_sliding_bars(void)
+{
+    static Adafruit_RA8875 local_tft = gettft();
+
+    local_tft.fillRect(0,0,SCREEN_SIZE_X, 60, RA8875_BLUE);
+    local_tft.fillRoundRect(600, 100, 160, 70, 20, RA8875_BLUE);
+
+    local_tft.textMode();
+
+    local_tft.textSetCursor(20, 20);
+    local_tft.textEnlarge(0);
+
+    local_tft.textTransparent(RA8875_CYAN);
+
+    local_tft.textWrite("---------------- +++++ Unexpectedly High Enviromental Temperature +++++ -----------------------                                       Frequency Select Menu");
+
+    local_tft.textSetCursor(80, REC_MIN_Y+20);
+    local_tft.textTransparent(RA8875_BLUE);
+    local_tft.textEnlarge(2);
+    local_tft.textWrite("Choose Frequency:");
+
+    local_tft.textTransparent(RA8875_BLACK);
+    local_tft.textEnlarge(2);
+    local_tft.textSetCursor(250, REC_MIN_Y+70);
+
+    local_tft.textWrite("133");
+    local_tft.textSetCursor(320, REC_MIN_Y+70);
+    local_tft.textWrite(",");
+    local_tft.textSetCursor(340, REC_MIN_Y+70);
+    local_tft.textWrite("2");
+
+    local_tft.textSetCursor(390, REC_MIN_Y+70);
+    local_tft.textWrite("MHz");
+
+    local_tft.textSetCursor(620, 110);
+    local_tft.textEnlarge(1);
+    local_tft.textWrite("Select");
+
+    encoder_set_value(1, 0);
+    encoder_set_value(2, 0);
+    encoder_set_value(3, 0);
+    tsPoint_t raw;
+    sliding_bars(1, raw, 1);
+    sliding_bars(2, raw, 1);
+    sliding_bars(3, raw, 1);
+}
+
+
+bool sliding_bars(int encoder_num,  tsPoint_t touch_raw, int init)
 {
     static Adafruit_RA8875 local_tft = gettft();
     int32_t color;
@@ -642,74 +751,198 @@ bool sliding_bars(int encoder_num)
     int min_Y_val = 0;
     if(encoder_num == 1)
     {
-        color = RA8875_CYAN;
+        color = 0xFDE0;
         max_Y_val = MAX_Y_VAL_1;
         min_Y_val = MIN_Y_VAL_1;
     }
     else if(encoder_num == 2)
     {
-        color = RA8875_GREEN;
+        color = 0x03E0; //dark green
         max_Y_val = MAX_Y_VAL_2;
         min_Y_val = MIN_Y_VAL_2;
     }
     else if(encoder_num == 3)
     {
-        color = RA8875_MAGENTA;
+        color = RA8875_RED; //dark yellow
         max_Y_val = MAX_Y_VAL_3;
         min_Y_val = MIN_Y_VAL_3;
     }
 
-    local_tft.textMode();
-    local_tft.textSetCursor(250, 100);
+
+    // update top half
+    update_top_half();
     
 
-    /* Render some text! */
-    char string[16] = "Ferdi's Radio! ";
-    local_tft.textTransparent(RA8875_BLUE);
-    local_tft.textEnlarge(2.5);
-    local_tft.textWrite(string);
-
     local_tft.graphicsMode();
-    local_tft.fillTriangle(MIN_X_VAL, max_Y_val, MAX_X_VAL, max_Y_val, MAX_X_VAL, min_Y_val, BACKGROUND_COLOR);
-    local_tft.drawTriangle(MIN_X_VAL, max_Y_val, MAX_X_VAL, max_Y_val, MAX_X_VAL, min_Y_val, color);
-
-    local_tft.textMode();
-
-    char string_buffer[4];
-    for(int i = 0; i<=24; i++)
+    if(last_action >= last_action_encoder1 && last_action <= last_action_encoder3 || init)
     {
-        itoa(i-12, string_buffer, 10);
-        draw_numbers(string_buffer, MIN_X_VAL + ((MAX_X_VAL - MIN_X_VAL) / 24)*i, max_Y_val);
+        local_tft.fillTriangle(MIN_X_VAL, max_Y_val, MAX_X_VAL, max_Y_val, MAX_X_VAL, min_Y_val, BACKGROUND_COLOR);
+        local_tft.drawTriangle(MIN_X_VAL, max_Y_val, MAX_X_VAL, max_Y_val, MAX_X_VAL, min_Y_val, color);
+
+        local_tft.textMode();
+
+        char string_buffer[4];
+        for(int i = 0; i<=24; i++)
+        {
+            itoa(i-12, string_buffer, 10);
+            draw_numbers(string_buffer, MIN_X_VAL + ((MAX_X_VAL - MIN_X_VAL) / 24)*i, max_Y_val);
+        }
+
+        int encoder_value = encoder_get_value(encoder_num);
+
+        int bar_fill_value_x = convert_encoder2display_x(encoder_value);
+        int bar_fill_value_y = convert_encoder2display_y(bar_fill_value_x, max_Y_val);
+
+        local_tft.graphicsMode();
+
+        local_tft.fillTriangle(MIN_X_VAL, max_Y_val, bar_fill_value_x, max_Y_val, bar_fill_value_x, bar_fill_value_y, color);
+        last_action = last_action_none;
+    }
+    else if(last_action == last_action_touch)
+    {
+        last_action = last_action_none;
+        if(select_btn_pressed(touch_raw))
+        {
+            int solved_values[3] = {10,-4,-1};
+            int i;
+            for(i = 1; i<=NUM_ENCODERS_DEFINED; i++)
+            {
+                Serial.print(solved_values[i-1]);
+                Serial.print(encoder_get_value(i));
+                if(encoder_get_value(i) != solved_values[i-1])
+                {
+                    init_sliding_bars();
+                    return 0;
+                }      
+            }
+            // puzzle solved!
+            return 1;
+        }
+    }
+    // puzzle not solved
+    return 0;
+
+}
+
+bool select_btn_pressed(tsPoint_t touch_raw)
+{
+    tsPoint_t calibrated;
+    static tsMatrix_t local_matrix = gettsMatrix();
+    //Calcuate the real X/Y position based on the calibration matrix 
+    calibrateTSPoint(&calibrated, &touch_raw, &local_matrix);
+
+    Serial.println("calibrated:");
+    Serial.println(calibrated.x);
+    Serial.println(calibrated.y);
+
+    if(calibrated.x >= SELECT_FIELD_X && calibrated.x <= SELECT_FIELD_X + 180)
+    {
+        if(calibrated.y >= SELECT_FIELD_Y && calibrated.y <= SELECT_FIELD_Y + 80)
+        {
+            Serial.println("select pressed!");
+            return true;
+        }
+    }
+    return false; 
+}
+
+void update_top_half()
+{
+    
+
+    int new_freq = calc_cur_frequency();
+    if(new_freq != cur_frequency)
+    {
+        cur_frequency = new_freq;
+
+        static char dest[5] = "133";
+        static char last[2] = "2";
+
+        static Adafruit_RA8875 local_tft = gettft();
+
+        local_tft.textMode();
+
+        local_tft.textColor(BACKGROUND_COLOR, BACKGROUND_COLOR);
+        local_tft.textEnlarge(2);
+        local_tft.textSetCursor(250, REC_MIN_Y+70);
+
+        local_tft.textWrite(dest);
+        local_tft.textSetCursor(320, REC_MIN_Y+70);
+        local_tft.textWrite(",");
+        local_tft.textSetCursor(340, REC_MIN_Y+70);
+        local_tft.textWrite(last);
+
+        char string1[5];
+        itoa(cur_frequency, string1, 10);
+        strcpy(dest, string1);
+        if(cur_frequency >= 1000)
+        {
+            strcpy(last, string1+3);
+            dest[3] = '\0';
+        }
+        else{
+            strcpy(last, string1+2);
+            dest[2] = '\0';
+        }
+
+        local_tft.textSetCursor(80, REC_MIN_Y+20);
+        local_tft.textTransparent(RA8875_BLUE);
+        local_tft.textEnlarge(2);
+
+        local_tft.textWrite("Choose Frequency:");
+
+        local_tft.textTransparent(RA8875_BLACK);
+        local_tft.textEnlarge(2);
+        local_tft.textSetCursor(250, REC_MIN_Y+70);
+        local_tft.textWrite(dest);
+
+        local_tft.textSetCursor(320, REC_MIN_Y+70);
+        local_tft.textWrite(",");
+        local_tft.textSetCursor(340, REC_MIN_Y+70);
+        local_tft.textWrite(last);
+
+        local_tft.textSetCursor(390, REC_MIN_Y+70);
+        local_tft.textWrite("MHz");
+
+
+        local_tft.graphicsMode();
+
     }
 
-    int encoder_value = encoder_get_value(encoder_num);
+/*
+    
+    
 
-    int bar_fill_value_x = convert_encoder2display_x(encoder_value);
-    int bar_fill_value_y = convert_encoder2display_y(bar_fill_value_x, max_Y_val);
+    // Render some text! 
+    char string1[5];
+    char dest[5];
+    char last[2]; 
+    
+    //itoa(cur_frequency, string1, 10);
+    //strcpy(dest, string1);
+    //strcpy(last, string1+4);
+    //dest[4] = '\0';
+    local_tft.textTransparent(RA8875_BLUE);
+    local_tft.textEnlarge(2);
+    local_tft.textWrite("hi");*/
+    //local_tft.textSetCursor(300, REC_MIN_Y);
+    //local_tft.textWrite(last);
+}
 
-    Serial.print("value of encoder num ");
-    Serial.print(encoder_num);
-    Serial.print(": ");
-    Serial.print(encoder_value);
 
-    local_tft.graphicsMode();
-
-    local_tft.fillTriangle(MIN_X_VAL, max_Y_val, bar_fill_value_x, max_Y_val, bar_fill_value_x, bar_fill_value_y, color);
-
-    int solved_values[3] = {10,-4,-1};
-
+int calc_cur_frequency()
+{
+    int summed_values = 1332;
     int i;
+
+    summed_values = 1332; // + encoder_get_value(1);
     for(i = 1; i<=NUM_ENCODERS_DEFINED; i++)
     {
-        Serial.print(solved_values[i-1]);
-        Serial.print(encoder_get_value(i));
-        if(encoder_get_value(i) != solved_values[i-1])
-        {
-            return 0;
-        }      
+        Serial.println(encoder_get_value(i));
+        summed_values += encoder_get_value(i)*pow10(i-1);
     }
-    //solved
-    return 1;
+   return summed_values;
+    
 }
 
 void draw_numbers(const char* string, int cursor_x, int cursor_y)
@@ -723,6 +956,7 @@ void draw_numbers(const char* string, int cursor_x, int cursor_y)
     local_tft.textEnlarge(0);
     local_tft.textWrite(string);
 }
+
 int convert_encoder2display_x(int encoder_value)
 {
     int return_val = MEAN_X_VAL;
