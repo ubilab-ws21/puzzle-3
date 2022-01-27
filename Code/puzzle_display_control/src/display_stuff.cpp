@@ -198,6 +198,7 @@ void init_rect()
 
     // show all letters
     blink_section_letters(false); 
+    removed = false;
 }
 
 void draw_placeholders()
