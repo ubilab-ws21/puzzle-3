@@ -93,6 +93,9 @@ static int function_called_count = 0;
 
 static int cur_frequency = 1332; 
 
+static char dest[5] = "133";
+static char last[2] = "2";
+
 void init_rect()
 {
     static tsMatrix_t local_matrix = gettsMatrix();
@@ -701,6 +704,7 @@ void init_sliding_bars(void)
 
     local_tft.fillRect(0,0,SCREEN_SIZE_X, 60, RA8875_BLUE);
     local_tft.fillRoundRect(600, 100, 160, 70, 20, RA8875_BLUE);
+    local_tft.drawRoundRect(600, 100, 160, 70, 20, RA8875_WHITE);
 
     local_tft.textMode();
 
@@ -720,22 +724,24 @@ void init_sliding_bars(void)
     local_tft.textEnlarge(2);
     local_tft.textSetCursor(250, REC_MIN_Y+70);
 
-    local_tft.textWrite("133");
+    local_tft.textWrite(dest);
     local_tft.textSetCursor(320, REC_MIN_Y+70);
     local_tft.textWrite(",");
     local_tft.textSetCursor(340, REC_MIN_Y+70);
-    local_tft.textWrite("2");
+    local_tft.textWrite(last);
 
     local_tft.textSetCursor(390, REC_MIN_Y+70);
     local_tft.textWrite("MHz");
 
-    local_tft.textSetCursor(620, 110);
+    local_tft.textSetCursor(630, 120);
+    local_tft.textTransparent(RA8875_WHITE);
     local_tft.textEnlarge(1);
     local_tft.textWrite("Select");
-
+    /*
     encoder_set_value(1, 0);
     encoder_set_value(2, 0);
     encoder_set_value(3, 0);
+    */
     tsPoint_t raw;
     sliding_bars(1, raw, 1);
     sliding_bars(2, raw, 1);
@@ -811,6 +817,16 @@ bool sliding_bars(int encoder_num,  tsPoint_t touch_raw, int init)
                 Serial.print(encoder_get_value(i));
                 if(encoder_get_value(i) != solved_values[i-1])
                 {
+                    local_tft.fillRoundRect(160, SELECT_FIELD_Y, 400, 100, 10, RA8875_RED);
+                    local_tft.drawRoundRect(160, SELECT_FIELD_Y, 400, 100, 10, RA8875_BLACK);
+
+                    local_tft.textMode();
+                    local_tft.textEnlarge(1);
+                    local_tft.textSetCursor(220, 130);
+                    local_tft.textTransparent(RA8875_BLUE);
+                    local_tft.textWrite("Unknown Frequency!");
+                    delay(1500);
+                    local_tft.fillRoundRect(160, SELECT_FIELD_Y, 400, 100, 10, BACKGROUND_COLOR);
                     init_sliding_bars();
                     return 0;
                 }      
@@ -854,9 +870,6 @@ void update_top_half()
     if(new_freq != cur_frequency)
     {
         cur_frequency = new_freq;
-
-        static char dest[5] = "133";
-        static char last[2] = "2";
 
         static Adafruit_RA8875 local_tft = gettft();
 
