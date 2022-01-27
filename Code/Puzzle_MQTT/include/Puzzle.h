@@ -71,7 +71,8 @@ void puzzleIdle();
 void puzzleAntenna();
 void puzzleMap();
 void puzzleTouchgame();
-const char * handleMsg(const char *);
+const char * handleMsg(const char *, const char *);
 void handleStream(Stream *);
+void mqtt_publish(const char*, const char*, const char*);
 
 #endif
