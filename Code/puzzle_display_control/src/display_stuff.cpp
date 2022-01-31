@@ -427,6 +427,7 @@ bool rectangles_game(tsPoint_t touch_raw)
                     rectangles.tr_corner.y = placeholder_y;
                     rectangles.color = color;
                     rectangles.section = free_placeholer_num+18;*/
+                    
 
                     local_tft.fillRect(rectangles.tr_corner.x, rectangles.tr_corner.y, REC_SIZE_X, REC_SIZE_Y, rectangles.color);
                     

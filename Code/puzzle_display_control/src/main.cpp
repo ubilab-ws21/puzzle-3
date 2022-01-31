@@ -14,9 +14,13 @@
 #define ESA 1       // folder number of Emergency Message
 #define Ferdi 2     // folder number of Radio station message 
 #define goodNews 3  // folder number of good News Radio
-#define noise 10    // folder number of noise
+#define HIGH_NOISE 10
+#define NOISE 10    // folder number of noise
+#define LOW_NOISE 10
 #define rickroll 99 // default.
 //#include "Fonts/FreeSerfBoldItalic9pt7b.h"
+
+
 
 /**************************************************************************/
 /*!
@@ -24,7 +28,6 @@
 /**************************************************************************/
 
 tsPoint_t cal_letter;
-
 
 SoftwareSerial DFPlayerSoftwareSerial(TX, RX);
 
@@ -75,10 +78,19 @@ int encoder_triggered = 0;
 bool ant_correct = false;
 int new_vol = 20;
 tsPoint_t raw;
+int ant_value;
+
+int next_state = 1;
+
+
+int ant_state = 0;
+int old_ant_state = 0;
+
+int noise_arrays[3] = {HIGH_NOISE, NOISE, LOW_NOISE};
+
 void loop()
 {
     main_state_machine();
-    
 }
 
 
@@ -90,23 +102,46 @@ void main_state_machine()
         if(!flagset)
         {
             Serial.println("case 0");
-            mp3Player.loopFolder(noise);
+            mp3Player.loopFolder(HIGH_NOISE);
             first_screen();
             flagset = true;   
         }
         
-        ant_correct = check_ant_encoder();
-
-        if (ant_correct) //if(antenna applied)
+        ant_correct = check_ant_encoder(&ant_value);
+        /*
+        if(!ant_correct)
         {
-            state = 1;
+            if(ant_value <= 0)
+            {
+                ant_state = 0;
+                
+            }
+            else if(ant_value <= 2)
+            {
+                ant_state = 1;
+            }
+            else if(ant_value <= 5)
+            {
+                ant_state = 2;
+            }
+            if(ant_state != old_ant_state)
+            {
+                mp3Player.loopFolder(noise_arrays[ant_state]);
+                old_ant_state = ant_state;
+            }
+        }
+        else 
+        */
+        if(ant_correct)
+        {
+            state = next_state;
             flagset = false;
         }
         break;
     case 1:
         if(!flagset){
             Serial.println("case 1");
-            mp3Player.loopFolder(ESA);
+            //mp3Player.loopFolder(ESA);
             fill_display(BACKGROUND_COLOR);
             init_sliding_bars();
             flagset = true;
@@ -120,13 +155,14 @@ void main_state_machine()
             state = 2;
             flagset = false;
             solved = false;
-        }            
+        } 
+
+                 
         break;
 
     case 2:
         if(!flagset){
-            mp3Player.loopFolder(Ferdi);
-            
+            //mp3Player.loopFolder(Ferdi);
             init_rect();
             flagset = true;
         }
@@ -146,6 +182,7 @@ void main_state_machine()
     case 3:
         if(!flagset){
             // oder nur playFolder    
+            mp3Player.volume(25);
             mp3Player.loopFolder(goodNews);        
             final_screen();
             flagset = true;
@@ -158,4 +195,12 @@ void main_state_machine()
     {
         mp3Player.volume(new_vol);
     }
+/*
+    ant_correct = check_ant_encoder(&ant_value);
+    if(!ant_correct)
+    {
+        Serial.print("ant not correct");
+        next_state = state;
+        state = 0;
+    } */
 }
