@@ -15,7 +15,7 @@ MQTT-Topics for the hint-system
 | :--:	| :---------: | :------:| :---------: |:--------: | :--------:|
 | game/puzzle3/antenna | Hint-System: Unlock the hint for the first game | active_1 & inactive | inactive | hint-system | radio |
 | game/puzzle3/map | Hint-System: Unlock the hints for the second game | active_1, active_2 & inactive | inactive | hint-system | radio |
-| game/puzzle3/touchgame | Hint-System: Unlock the hints for the third game | active_1, active_2, active_3, active_4 & inactive | hint-system | radio |
+| game/puzzle3/touchgame | Hint-System: Unlock the hints for the third game | active_1, active_2, active_3, active_4 & inactive | inactive | hint-system | radio |
 
 
 
