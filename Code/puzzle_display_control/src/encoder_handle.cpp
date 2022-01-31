@@ -144,8 +144,8 @@ unsigned int check_ant_encoder()
         }
 
     ant_value = abs(encoder_ant.encoder_value);
-    Serial.print(" Antenne ");
-    Serial.println(ant_value);
+    //Serial.print(" Antenne ");
+    //Serial.println(ant_value);
 
     return ant_value;
 }

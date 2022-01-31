@@ -17,7 +17,7 @@
 #define SECONDHINT 2
 #define THIRDHINT 3
 #define FOURTHHINT 4
-#define UNSOLVED 0
+#define INACTIVE 0
 
 // Speed of Serial Communication
 #define SERIAL_COMSPEED 115200
@@ -80,5 +80,5 @@ void puzzleTouchgame();
 const char * handleMsg(const char *, const char *);
 void handleStream(Stream *);
 void mqtt_publish(const char*, const char*, const char*);
-
+void publish_Hint(char, char);
 #endif
