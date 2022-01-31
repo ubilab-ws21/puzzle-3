@@ -1,7 +1,8 @@
 #include <Puzzle.h>
 #include <privateInfo.h>
 
-
+StaticJsonDocument<300> doc;
+JsonObject JSONencoder = doc.to<JsonObject>();
 
 // Setup function that runs once upon startup or reboot
 void setup() {
@@ -59,13 +60,14 @@ void setup() {
   if (mqtt.connect(NAME)) {
     Serial.println("Connected to MQTT server");
     // Subscribe to a certain topic
-    mqtt.subscribe("/3");
+    mqtt.subscribe("3/#");
   } else {
     Serial.println("Cannot connect to MQTT server");
   }
 
   // Indicate end of setup
   Serial.println("Setup done!");
+
 }
 
 
@@ -119,7 +121,7 @@ void handleStream(Stream * getter) {
     }
   }
   // Handle given Msg
-  const char * returnMsg = handleMsg(msg);
+  const char * returnMsg = handleMsg(msg, msg); //not sure what happens here, 
   // Write something back to stream only if wanted
   if (returnMsg[0] != '\0') {
     getter->println(returnMsg);
@@ -129,15 +131,22 @@ void handleStream(Stream * getter) {
 /*
    Handle a received message, may return some answer.
 */
-const char * handleMsg(const char * msg) {
+const char * handleMsg(const char * msg, const char* topic) {
   // strcmp returns zero on a match
   if (strcmp(msg, "solved") == 0) {
     puzzleSolved();
-  } else if (strcmp(msg, "antenna") == 0) {
+  } else if ( (strcmp(topic,"3/gamecontrol/antenna") == 0) && (strcmp(msg, "off") == 0)) {
+    puzzleIdle(); //maybe different idle state required
+  } else if ( (strcmp(topic,"3/gamecontrol/antenna") == 0) && (strcmp(msg, "on") == 0)) {
     puzzleAntenna();
-  } else if (strcmp(msg, "mapgame") == 0) {
+    mqtt_publish("game/puzzle3/Antenna","trigger","active");
+  } else if ((strcmp(topic,"3/gamecontrol/map") == 0) && (strcmp(msg, "off") == 0)){
+    puzzleIdle(); //maybe different idle state required
+  } else if ((strcmp(topic,"3/gamecontrol/map") == 0) && (strcmp(msg, "on") == 0)) {
     puzzleMap();
-  } else if (strcmp(msg, "touchgame") == 0) {
+  } else if ((strcmp(topic,"3/gamecontrol/touchgame") == 0) && (strcmp(msg, "off") == 0)){
+    puzzleIdle(); //maybe different idle state required
+  } else if ((strcmp(topic,"3/gamecontrol/touchgame") == 0) && (strcmp(msg, "on") == 0)) {
     puzzleTouchgame();
   } else if (strcmp(msg, "idle") == 0) {
     puzzleIdle();
@@ -175,6 +184,9 @@ void puzzleAntenna() {
   // Code to set puzzle into active state ...
   Serial.println("We are now in Antennagame state");
   puzzleStateChanged();
+  Serial.println("Surprisingly we just solved this");
+  mqtt_publish("3/gamecontrol/antennna","status","solved");
+  gameState = idle;
 }
 
 /*
@@ -185,6 +197,9 @@ void puzzleMap() {
   // Code to set puzzle into active state ...
   Serial.println("We are now in Mapgame state");
   puzzleStateChanged();
+  Serial.println("Surprisingly we just solved this");
+  mqtt_publish("3/gamecontrol/map","status","solved");
+  gameState = idle;
 }
 
 /*
@@ -195,6 +210,9 @@ void puzzleTouchgame() {
   // Code to set puzzle into active state ...
   Serial.println("We are now in Touchgame state");
   puzzleStateChanged();
+  Serial.println("Surprisingly we just solved this");
+  mqtt_publish("3/gamecontrol/touchgame","status","solved");
+  gameState = idle;
 }
 
 /*
@@ -290,8 +308,20 @@ void mqttCallback(char* topic, byte* message, unsigned int length) {
     // Try to extract new state
     const char* newState = dict["state"];
     // If key exists this is not NULL
+    Serial.println(newState);
     if (newState) {
-      handleMsg(newState);
+      handleMsg(newState, topic);
     }
   }
+}
+
+void mqtt_publish(const char* topic, const char* method, const char* state){
+  JSONencoder["method"] = method;
+  JSONencoder["state"] = state;
+  JSONencoder["data"] = 0;
+
+  char JSONmessageBuffer[100];
+
+  serializeJson(doc,JSONmessageBuffer, 100);
+  mqtt.publish(topic, JSONmessageBuffer,true); //"test", retained);
 }
