@@ -100,7 +100,7 @@ void setup()
     init_display();
     init_encoder();
 
-    state = stateAntenna;
+    state = stateLogin;
 
     ant_state = antenna_Level4;
     old_ant_state = antenna_Level4;
@@ -213,8 +213,8 @@ void main_state_machine()
     {
         mp3Player.volume(new_vol);
     }
-/*
-    
+
+    /*
     if(state != stateAntenna)
     { 
         ant_value = check_ant_encoder();
@@ -227,12 +227,14 @@ void main_state_machine()
         }
     }*/
 }
-
+int last_touched = millis();
 bool check_touch_or_encoder_events()
 {
     enc_num_triggered = check_game_encoders();
-    if(!digitalRead(RA8875_INT))
+    
+    if(!digitalRead(RA8875_INT) && millis()-last_touched > 500)
     {
+        last_touched = millis();
         handleTouchEvent(&raw);
         return true;
     }
@@ -241,8 +243,9 @@ bool check_touch_or_encoder_events()
         set_last_action(enc_num_triggered);
         return true;
     }
-    
-    
+    else{
+        set_last_action(last_action_none);
+    }
     return false;
 }
 

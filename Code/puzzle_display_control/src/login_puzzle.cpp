@@ -17,10 +17,8 @@
 
 char letters[18];
 
-int orig_valid_sections[18] = {1,0,1,1,0,1,0,1,1,1,0,1,1,1,0,1,0,1};
+int orig_valid_sections[18] = {0,1,1,1,0,1,0,1,1,1,0,1,1,1,0,1,0,1};
 int valid_sections[18] = {};
-
-
 
 enum{
     NONE_SECTION = 0,
@@ -51,7 +49,7 @@ bool letters_visible = false;
 
 static int function_called_count = 0;
 
-bool removed = false;
+bool removed = true;
 
 
 
@@ -229,8 +227,10 @@ bool login_game(tsPoint_t touch_raw)
     {
         if(!removed)
         {
+            Serial.print("Calling from enc 12");
             remove_section_letters();
             removed = true; 
+            letters_visible = false;
         }
         
         Serial.print("last action = ");
@@ -337,16 +337,18 @@ bool login_game(tsPoint_t touch_raw)
     }
     else if(last_action == last_action_encoder3)
     {
+        if(!removed)
+        {
+            Serial.print("Calling from enc 3");
+            remove_section_letters();
+            removed = true; 
+            letters_visible = false;
+        }
+        last_action = last_action_none;
 
     }
     else if(last_action == last_action_touch)
     {
-        if(!removed)
-        {
-            remove_section_letters();
-            removed = true; 
-        }
-
         tsPoint_t calibrated;
         //Calcuate the real X/Y position based on the calibration matrix 
         calibrateTSPoint(&calibrated, &touch_raw, &local_matrix);
@@ -520,29 +522,31 @@ void remove_section_letters()
     bool valid_section;
     int letter_bg_color;
     int char_x, char_y;
+
+    Serial.print("REMOVE");
     for(section=0; section<18; section++)
-        {   
-            valid_section = is_section_with_letter(section);
-            if(valid_section)
+    {   
+        valid_section = is_section_with_letter(section);
+        if(valid_section)
+        {
+            char mychar = get_letter(section);
+            int letter_color; 
+            if (!is_rect_here(section))
             {
-                char mychar = get_letter(section);
-                int letter_color; 
-                if (!is_rect_here(section))
-                {
-                    letter_color = BACKGROUND_COLOR;
-                    letter_bg_color = BACKGROUND_COLOR;
-                }
-                else
-                {
-                    letter_color = game_rect.color;
-                    letter_bg_color = game_rect.color;
-                }
-                
-                section_to_xy(section, &char_x, &char_y);
-                local_tft.drawChar(char_x + 50, char_y + 50, mychar, letter_color, letter_bg_color, 5);
+                letter_color = BACKGROUND_COLOR;
+                letter_bg_color = BACKGROUND_COLOR;
             }
+            else
+            {
+                letter_color = game_rect.color;
+                letter_bg_color = game_rect.color;
+            }
+            
+            section_to_xy(section, &char_x, &char_y);
+            local_tft.drawChar(char_x + 50, char_y + 50, mychar, letter_color, letter_bg_color, 5);
         }
-        letters_visible = false;
+    }
+    letters_visible = false;
 }
 
 void blink_section_letters(bool blink)
@@ -553,32 +557,34 @@ void blink_section_letters(bool blink)
     int char_x, char_y;
     bool valid_section;
     bool was_visible = letters_visible;
-    if(!letters_visible)
+    Serial.println("BLINK");
+    for(section=0; section<18; section++)
     {
-        for(section=0; section<18; section++)
+        valid_section = is_section_with_letter(section);
+        if(valid_section)
         {
-            valid_section = is_section_with_letter(section);
-            if(valid_section)
+            char mychar = get_letter(section);
+            if (!is_rect_here(section))
             {
-                char mychar = get_letter(section);
-                if (!is_rect_here(section))
-                {
-                    letter_bg_color = BACKGROUND_COLOR;
-                }
-                else
-                {
-                    letter_bg_color = game_rect.color;
-                }
-            section_to_xy(section, &char_x, &char_y);
-            local_tft.drawChar(char_x+50, char_y+50, mychar, RA8875_BLACK, letter_bg_color , 5);
+                letter_bg_color = BACKGROUND_COLOR;
             }
+            else
+            {
+                letter_bg_color = game_rect.color;
+            }
+        section_to_xy(section, &char_x, &char_y);
+        local_tft.drawChar(char_x+50, char_y+50, mychar, RA8875_BLACK, letter_bg_color , 5);
         }
-        letters_visible = true;
     }
+    letters_visible = true;
+    removed = false;
+    }/*
     if(blink || was_visible)
     {
         if(blink)
             delay(1500);
+
+        Serial.print("blinking");
         for(section=0; section<18; section++)
         {   
             valid_section = is_section_with_letter(section);
@@ -601,9 +607,10 @@ void blink_section_letters(bool blink)
                 local_tft.drawChar(char_x + 50, char_y + 50, mychar, letter_color, letter_bg_color, 5);
             }
         }
+        removed = true;
         letters_visible = false;
     }
-}
+}*/
 
 void draw_placeholder_letters()
 {
