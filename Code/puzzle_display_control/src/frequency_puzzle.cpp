@@ -38,6 +38,8 @@ void init_sliding_bars(void)
 {
     static Adafruit_RA8875 local_tft = gettft();
 
+
+    local_tft.fillScreen(BACKGROUND_COLOR);
     local_tft.fillRect(0,0,SCREEN_SIZE_X, 60, RA8875_BLUE);
     local_tft.fillRoundRect(600, 100, 160, 70, 20, RA8875_BLUE);
     local_tft.drawRoundRect(600, 100, 160, 70, 20, RA8875_WHITE);
@@ -49,7 +51,7 @@ void init_sliding_bars(void)
 
     local_tft.textTransparent(RA8875_CYAN);
 
-    local_tft.textWrite("---------------- +++++ Unexpectedly High Enviromental Temperature +++++ -----------------------                                       Frequency Select Menu");
+    local_tft.textWrite("-------------- +++++ NEWS: Unexpectedly High Enviromental Temperature +++++ --------------------                                       Frequency Select Menu");
 
     local_tft.textSetCursor(80, REC_MIN_Y+20);
     local_tft.textTransparent(RA8875_BLUE);
@@ -153,7 +155,7 @@ bool sliding_bars(int encoder_num,  tsPoint_t touch_raw, int init)
                 Serial.print(solved_values[i-1]);
                 Serial.print(encoder_get_value(i));
                 if(encoder_get_value(i) != solved_values[i-1])
-                {
+                {/*
                     local_tft.fillRoundRect(160, SELECT_FIELD_Y, 400, 100, 10, RA8875_RED);
                     local_tft.drawRoundRect(160, SELECT_FIELD_Y, 400, 100, 10, RA8875_BLACK);
 
@@ -162,8 +164,8 @@ bool sliding_bars(int encoder_num,  tsPoint_t touch_raw, int init)
                     local_tft.textSetCursor(220, 130);
                     local_tft.textTransparent(RA8875_BLUE);
                     local_tft.textWrite("Unknown Frequency!");
-                    delay(1500);
-                    local_tft.fillRoundRect(160, SELECT_FIELD_Y, 400, 100, 10, BACKGROUND_COLOR);
+                    //delay(1500);
+                    local_tft.fillRoundRect(160, SELECT_FIELD_Y, 400, 100, 10, BACKGROUND_COLOR);*/
                     init_sliding_bars();
                     return 0;
                 }      

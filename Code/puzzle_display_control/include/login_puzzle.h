@@ -11,7 +11,7 @@ void init_rect(void);
 void draw_placeholders(void);
 void draw_showbutton(int counter);
 void draw_reset_button(void);
-bool rectangles_game(tsPoint_t touch_raw);
+bool login_game(tsPoint_t touch_raw);
 int what_was_touched(int x, int y);
 int get_section(int x, int y);
 
