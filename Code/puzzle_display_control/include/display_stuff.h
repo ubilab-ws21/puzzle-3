@@ -3,6 +3,14 @@
 
 #include "display_setup.h"
 
+#define REC_MIN_Y 80
+#define REC_SIZE_X 133
+#define REC_SIZE_Y 100
+
+#define NUM_SECTIONS_X 6
+#define NUM_SECTIONS_Y 4
+
+
 struct rect{
     tsPoint_t tr_corner;
     tsPoint_t tr_corner_cal;
@@ -10,36 +18,22 @@ struct rect{
     int section; 
 };
 
-void init_rect(void);
-void draw_placeholders(void);
-void draw_showbutton(int counter);
-void draw_reset_button(void);
-bool rectangles_game(tsPoint_t touch_raw);
-int what_was_touched(int x, int y);
-int get_section(int x, int y);
-void section_to_xy(int section, int* x, int* y);
-bool is_section_with_letter(int section);
-bool random_letter_generation(bool init);
-char get_letter(int section);
-void remove_section_letters(void);
-void blink_section_letters(bool blink);
-void draw_placeholder_letters(void);
-void shift_letter(int cur_section);
-bool isNewRecToCome(int rect_selected_num);
-bool is_rect_here(int section);
-int position_occupied(int section);
-bool is_rect_puzzle_solved(void);
-void dissapearing_letters(void);
-void init_sliding_bars(void);
-bool sliding_bars(int encoder_num, tsPoint_t touch_raw, int init);
-bool select_btn_pressed(tsPoint_t touch_raw);
-void update_top_half(void);
-int calc_cur_frequency(void);
-void draw_numbers(const char* string, int cursor_x, int cursor_y);
-int convert_encoder2display_x(int encoder_value);
-int convert_encoder2display_y(int x_val, int max_y_val);
+enum
+{
+    last_action_none = 0,
+    last_action_encoder1 = 1,
+    last_action_encoder2,
+    last_action_encoder3,
+    last_action_touch
+};
+
+
+int handleTouchEvent(tsPoint_t * point);
 int waitForTouchorEncoderEvent(tsPoint_t *point);
+void section_to_xy(int section, int* x, int* y);
 void first_screen(void);
 void final_screen(void);
+void set_last_action(int last);
+int get_last_action(void);
 
 #endif

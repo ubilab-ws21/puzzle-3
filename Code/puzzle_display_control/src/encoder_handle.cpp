@@ -120,25 +120,34 @@ bool check_vol_encoder(int* new_volume)
     return false;
 }
 
-bool check_ant_encoder(int* ant_value)
+unsigned int check_ant_encoder()
 {
+    int ant_value;
     if (encoder_ant.encoder_value !=  encoder_ant._encoder.getCount())
         {
-            if(encoder_ant._encoder.getCount() >= -10 && encoder_ant._encoder.getCount() < 10)
+            if(encoder_ant._encoder.getCount() >= -12 && encoder_ant._encoder.getCount() <= 12)
             {
                 encoder_ant.encoder_value = encoder_ant._encoder.getCount();
+                
                 Serial.println("Encoder ant count  = " + String((int32_t)encoder_ant.encoder_value));
             }
-            else
+            else if(encoder_ant._encoder.getCount() < -12)
             {
-                encoder_ant._encoder.setCount(encoder_ant.encoder_value);
+                encoder_ant._encoder.setCount(abs(encoder_ant._encoder.getCount())-2);
+                encoder_ant.encoder_value = encoder_ant._encoder.getCount();
             }        
+            else if(encoder_ant._encoder.getCount() > 12)
+            {
+                encoder_ant._encoder.setCount(-(encoder_ant._encoder.getCount())+1);
+                encoder_ant.encoder_value = encoder_ant._encoder.getCount();
+            }
         }
-    if(encoder_ant.encoder_value > 5)
-            return true;
-    *ant_value = encoder_ant.encoder_value;
 
-    return false;
+    ant_value = abs(encoder_ant.encoder_value);
+    Serial.print(" Antenne ");
+    Serial.println(ant_value);
+
+    return ant_value;
 }
 
 bool vol_encoder_triggered()

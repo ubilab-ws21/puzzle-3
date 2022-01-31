@@ -2,6 +2,8 @@
 #include <DFRobotDFPlayerMini.h>
 #include "display_setup.h"
 #include "display_stuff.h"
+#include "login_puzzle.h"
+#include "frequency_puzzle.h"
 #include "encoder_handle.h"
 
 #include <stdio.h>
@@ -18,14 +20,12 @@
 #define NOISE 10    // folder number of noise
 #define LOW_NOISE 10
 #define rickroll 99 // default.
-//#include "Fonts/FreeSerfBoldItalic9pt7b.h"
 
+#define ANTENNA_CORRECT_POS 12
 
-
-/**************************************************************************/
-/*!
-*/
-/**************************************************************************/
+void main_state_machine();
+bool check_touch_or_encoder_events();
+bool check_correct_antenna_pos(unsigned int);
 
 tsPoint_t cal_letter;
 
@@ -46,11 +46,35 @@ enum GameState{
     stateDone
 };
 
-// the current state
-GameState state;
+enum AntennaState{
+    antenna_NoNoise = 0,
+    antenna_Level0 = 10, 
+    antenna_Level1 = 10,
+    antenna_Level2 = 10,
+    antenna_Level3 = 10,
+    antenna_Level4 = 10 
+};
 
-void main_state_machine();
-bool check_touch_or_encoder_events();
+int enc_num_triggered = 0;
+
+bool ant_correct = false;
+
+int new_vol = 20;
+tsPoint_t raw;
+int ant_value;
+
+// the current state and the next state.
+// the next state is only needed if we temporarily need to go back to the state stateAntenna. 
+// Afterwards, we want to go back to the state we were in before (i.e. the state saved in next_sate)
+GameState state;
+GameState next_state;
+
+// the current and the old antenna state (old one is needed for comparison)
+AntennaState ant_state;
+AntennaState old_ant_state;
+
+int noise_arrays[5] = {antenna_Level0, antenna_Level1, antenna_Level2, antenna_Level3, antenna_Level4};
+
 
 void setup()
 {
@@ -78,27 +102,17 @@ void setup()
     init_display();
     init_encoder();
 
-    state = stateIdle;    
+    state = stateAntenna;    
+    next_state = stateFrequency;
+
+    ant_state = antenna_Level4;
+    old_ant_state = antenna_Level4;
 }
 
 /**************************************************************************/
 /*!
 */
 /**************************************************************************/
-int enc_num_triggered = 0;
-bool ant_correct = false;
-int new_vol = 20;
-tsPoint_t raw;
-int ant_value;
-
-int next_state = stateFrequency;
-
-
-int ant_state = 0;
-int old_ant_state = 0;
-
-int noise_arrays[3] = {HIGH_NOISE, NOISE, LOW_NOISE};
-
 void loop()
 {
     main_state_machine();
@@ -116,39 +130,26 @@ void main_state_machine()
         if(!flagset)
         {
             Serial.println("case 0");
-            mp3Player.loopFolder(HIGH_NOISE);
+            mp3Player.loopFolder(noise_arrays[4]);
             first_screen();
             flagset = true;   
         }
         
-        ant_correct = check_ant_encoder(&ant_value);
-        /*
-        if(!ant_correct)
+        unsigned int ant_value;
+        ant_value = check_ant_encoder();
+
+        if(check_correct_antenna_pos(ant_value))
+        {/*
+            state = stateFrequency;
+            flagset = false;*/
+        }
+        else
         {
-            if(ant_value <= 0)
-            {
-                ant_state = 0;
-            }
-            else if(ant_value <= 2)
-            {
-                ant_state = 1;
-            }
-            else if(ant_value <= 5)
-            {
-                ant_state = 2;
-            }
             if(ant_state != old_ant_state)
             {
-                mp3Player.loopFolder(noise_arrays[ant_state]);
+                mp3Player.loopFolder(ant_state);
                 old_ant_state = ant_state;
             }
-        }
-        else 
-        */
-        if(ant_correct)
-        {
-            state = stateFrequency;
-            flagset = false;
         }
         break;
     case stateFrequency:
@@ -236,4 +237,34 @@ bool check_touch_or_encoder_events()
     }
     
     return false;
+}
+
+bool check_correct_antenna_pos(unsigned int ant_value)
+{
+        if(ant_value < 2)
+        {
+            ant_state = antenna_Level4;
+        }
+        else if(ant_value < 4)
+        {
+            ant_state = antenna_Level3;
+        }
+        else if(ant_value < 6)
+        {
+            ant_state = antenna_Level2;
+        }
+        else if(ant_value < 8)
+        {
+            ant_state = antenna_Level1;
+        }
+        else if(ant_value < 10)
+        {
+            ant_state = antenna_Level0;
+        }
+        else if(ant_value <= ANTENNA_CORRECT_POS)
+        {
+            Serial.print("correct");
+            return true;
+        }
+        return false;
 }
