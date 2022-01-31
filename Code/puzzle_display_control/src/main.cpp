@@ -36,10 +36,21 @@ DFRobotDFPlayerMini mp3Player;
 
 bool flagset = false; 
 bool solved = false;
+
+
+enum GameState{
+    stateIdle = 1,
+    stateAntenna,
+    stateFrequency,
+    stateLogin,
+    stateDone
+};
+
 // the current state
-int state;
+GameState state;
 
 void main_state_machine();
+bool check_touch_or_encoder_events();
 
 void setup()
 {
@@ -67,20 +78,20 @@ void setup()
     init_display();
     init_encoder();
 
-    state = 0;    
+    state = stateIdle;    
 }
 
 /**************************************************************************/
 /*!
 */
 /**************************************************************************/
-int encoder_triggered = 0;
+int enc_num_triggered = 0;
 bool ant_correct = false;
 int new_vol = 20;
 tsPoint_t raw;
 int ant_value;
 
-int next_state = 1;
+int next_state = stateFrequency;
 
 
 int ant_state = 0;
@@ -98,7 +109,10 @@ void main_state_machine()
 {
     switch(state)
     {
-    case 0:
+    case stateIdle:
+
+    break;
+    case stateAntenna:
         if(!flagset)
         {
             Serial.println("case 0");
@@ -114,7 +128,6 @@ void main_state_machine()
             if(ant_value <= 0)
             {
                 ant_state = 0;
-                
             }
             else if(ant_value <= 2)
             {
@@ -134,11 +147,11 @@ void main_state_machine()
         */
         if(ant_correct)
         {
-            state = next_state;
+            state = stateFrequency;
             flagset = false;
         }
         break;
-    case 1:
+    case stateFrequency:
         if(!flagset){
             Serial.println("case 1");
             //mp3Player.loopFolder(ESA);
@@ -146,40 +159,40 @@ void main_state_machine()
             init_sliding_bars();
             flagset = true;
         }
-        encoder_triggered = waitForTouchorEncoderEvent(&raw);
-
-        solved = sliding_bars(encoder_triggered, raw, 0);
-
+        
+        if(check_touch_or_encoder_events())
+        {
+            solved = sliding_bars(enc_num_triggered, raw, 0);
+        }
+        
         if(solved)
         {
-            state = 2;
+            state = stateLogin;
             flagset = false;
             solved = false;
-        } 
-
-                 
+        }       
         break;
 
-    case 2:
+    case stateLogin:
         if(!flagset){
             //mp3Player.loopFolder(Ferdi);
             init_rect();
             flagset = true;
         }
         
-        if(waitForTouchorEncoderEvent(&raw) < 4)
+        if(check_touch_or_encoder_events())
         {
-            solved = rectangles_game(raw);  
-            
-            if(solved)
-            {
-                state = 3;
-                flagset = false;
-            }
+            solved = rectangles_game(raw);
+        }
+        
+        if(solved)
+        {
+            state = stateDone;
+            flagset = false;
         }
         break;
 
-    case 3:
+    case stateDone:
         if(!flagset){
             // oder nur playFolder    
             mp3Player.volume(25);
@@ -190,6 +203,7 @@ void main_state_machine()
         }
         break;
     }
+
     // check if volume has been changed (by triggering volume controller)
     if(check_vol_encoder(&new_vol))
     {
@@ -200,7 +214,26 @@ void main_state_machine()
     if(!ant_correct)
     {
         Serial.print("ant not correct");
+        flagset = false;
         next_state = state;
-        state = 0;
+        state = stateAntenna;
     } */
+}
+
+bool check_touch_or_encoder_events()
+{
+    enc_num_triggered = check_game_encoders();
+    if(enc_num_triggered)
+    {
+        set_last_action(enc_num_triggered);
+        return true;
+    }
+    else if(!digitalRead(RA8875_INT))
+    {
+        handleTouchEvent(&raw);
+        // set_last_action(4); // 4 = last_action_touch
+        return true;
+    }
+    
+    return false;
 }
