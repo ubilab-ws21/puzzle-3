@@ -11,7 +11,13 @@
 #ifndef Puzzle_h
 #define Puzzle_h
 
-
+//macros for hintsystem
+#define SOLVED  10
+#define FIRSTHINT 1
+#define SECONDHINT 2
+#define THIRDHINT 3
+#define FOURTHHINT 4
+#define UNSOLVED 0
 
 // Speed of Serial Communication
 #define SERIAL_COMSPEED 115200

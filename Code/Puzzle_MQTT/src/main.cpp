@@ -325,3 +325,57 @@ void mqtt_publish(const char* topic, const char* method, const char* state){
   serializeJson(doc,JSONmessageBuffer, 100);
   mqtt.publish(topic, JSONmessageBuffer,true); //"test", retained);
 }
+
+void publish_Hint(char game, char hintcount){
+  const char antennaTopic[] = "game/puzzle3/antenna";
+  const char mapTopic[] = "game/puzzle3/map";
+  const char touchTopic[] = "game/puzzle3/touchgame";
+  switch (game)
+  {
+  case 1:
+    if(hintcount == FIRSTHINT){
+      mqtt_publish(antennaTopic,"trigger","active_1");
+    }
+    else if(hintcount == INACTIVE){
+      mqtt_publish(antennaTopic,"trigger","inactive");
+    }
+    else if(hintcount == SOLVED){
+      mqtt_publish(antennaTopic,"trigger","solved");
+    }
+    break;
+  case 2:
+    if(hintcount == FIRSTHINT){
+      mqtt_publish(mapTopic,"trigger","active_1");
+    }
+    else if(hintcount == SECONDHINT){
+      mqtt_publish(mapTopic,"trigger","active_2");
+    }
+    else if(hintcount == INACTIVE){
+      mqtt_publish(mapTopic,"trigger","inactive");
+    }
+    else if(hintcount == SOLVED){
+      mqtt_publish(mapTopic,"trigger","solved");
+    }
+    case 3:
+      if(hintcount == FIRSTHINT){
+        mqtt_publish(touchTopic,"trigger","active_1");
+      }
+      else if(hintcount == SECONDHINT){
+        mqtt_publish(touchTopic,"trigger","active_2");
+      }
+      else if(hintcount == THIRDHINT){
+        mqtt_publish(touchTopic,"trigger","active_3");
+      }
+      else if(hintcount == FOURTHHINT){
+        mqtt_publish(touchTopic,"trigger","active_4");
+      }
+      else if(hintcount == INACTIVE){
+        mqtt_publish(touchTopic,"trigger","inactive");
+      }
+      else if(hintcount == SOLVED){
+        mqtt_publish(touchTopic,"trigger","solved");
+      }
+  default:
+    break;
+  }
+}
