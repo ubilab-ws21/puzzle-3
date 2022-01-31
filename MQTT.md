@@ -2,27 +2,20 @@ The MQQT-Specification for Puzzle 3:
 
 | Topic | Description | Payload | Reset-Value | Subscriber | Publisher |
 | :--:	| :---------: | :------:| :---------: |:--------: | :--------:|
-| 3/gamecontrol| Control the radio: which puzzle state is currently in play | Enum(Gamecontrol) | idle | radio, operator | radio, operator | 
-| 3/antenna/orientation | gives information if the angle of the antenna correct | boolean | false | operator | radio |
-| 3/map/knob1 | gives information whether knob1 is in correct position | boolean | false | operator | radio |
-| 3/map/knob2 | gives information whether knob2 is in correct position | boolean | false | operator | radio |
-| 3/map/knob3 | gives information whether knob3 is in correct position | boolean | false | operator | radio |
-| 3/touchgame/trialCount | gives information about the trails the group already had | int | 0 | operator | radio |
-| 3/touchgame/displayTime | the game can either be set in easy or hard mode | boolean | false | radio | operator |
+| 3/gamecontrol/antenna| Control the radio: start first puzzle & receive updates on it | on & off, inactive, active & solved | off | radio, operator | radio, operator | 
+| 3/gamecontrol/map | Control the radio: start the second puzzle & receive updates on it | on & off, inactive, active & solved | off | operator, radio | radio, operator |
+| 3/gamecontrol/touchgame | Control the radio: start the third puzzle & receive updates on it | on & off, inactive, active & solved | off | operator, radio | radio, operator |
+| 3/audiocontrol/roomsolved | Control the radio: play final message when the room is solved | on & off | off | radio | operator |
 
-Explanation of the Payload:
+We reduced the amount of MQTT-Topics since the hint-system is controlled by us directly: Therefore it is not required to send all informations to the operator, which are not really helpful in terms of gamecontrol.
 
-| Enum(gameControl) | Description | Subscriber | Publisher |
-| :---------------: | :---------: | :--------: | :-------: |
-| idle | Radiopuzzle is waiting in idle mode to be started by operator | radio | operator |
-| antenna | antenna game is started by operator | radio | operator |
-| antennaFinished | antenna game is finished | operator | radio |
-| map | map game is started by operator | radio | operator |
-| mapFinished | map game is finished | operator | radio |
-| touchgame | touchgame is started by operator | radio | operator |
-| touchgameFinished | touchgame is finished | operator | radio |
-| finished | radio game is finished | operator | radio |
 
-| int(trailCount) | Description |
-| :-------------: | :---------: |
-| ++ | everytime the game is failed, the trialcounter is increased |
+MQTT-Topics for the hint-system
+| Topic | Description | Payload | Reset-Value | Subscriber | Publisher |
+| :--:	| :---------: | :------:| :---------: |:--------: | :--------:|
+| game/puzzle3/antenna | Hint-System: Unlock the hint for the first game | active_1 & inactive | inactive | hint-system | radio |
+| game/puzzle3/map | Hint-System: Unlock the hints for the second game | active_1, active_2 & inactive | inactive | hint-system | radio |
+| game/puzzle3/touchgame | Hint-System: Unlock the hints for the third game | active_1, active_2, active_3, active_4 & inactive | inactive | hint-system | radio |
+
+
+

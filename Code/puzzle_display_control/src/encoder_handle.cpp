@@ -19,6 +19,8 @@ void init_encoder()
 
     ESP32Encoder::useInternalWeakPullResistors=UP;
 
+    
+
 	// use pin 19 and 18 for the first encoder
 	encoder[0]._encoder.attachSingleEdge(33, 32);
 	// use pin 17 and 16 for the second encoder
@@ -45,7 +47,11 @@ void init_encoder()
         Serial.println("Encoder Start = " + String((int32_t)encoder[0]._encoder.getCount()));
 
     }
-
+    /*
+    encoder[0]._encoder.setFilter(1000);
+    encoder[1]._encoder.setFilter(1000);
+    encoder[2]._encoder.setFilter(1000);
+*/
 
     // init volume encoder
     encoder_ant._encoder.attachSingleEdge(34, 35);
@@ -114,24 +120,34 @@ bool check_vol_encoder(int* new_volume)
     return false;
 }
 
-bool check_ant_encoder()
+unsigned int check_ant_encoder()
 {
+    int ant_value;
     if (encoder_ant.encoder_value !=  encoder_ant._encoder.getCount())
         {
-            if(encoder_ant._encoder.getCount() >= -10 && encoder_ant._encoder.getCount() < 10)
+            if(encoder_ant._encoder.getCount() >= -12 && encoder_ant._encoder.getCount() <= 12)
             {
                 encoder_ant.encoder_value = encoder_ant._encoder.getCount();
+                
                 Serial.println("Encoder ant count  = " + String((int32_t)encoder_ant.encoder_value));
             }
-            else
+            else if(encoder_ant._encoder.getCount() < -12)
             {
-                encoder_ant._encoder.setCount(encoder_ant.encoder_value);
+                encoder_ant._encoder.setCount(abs(encoder_ant._encoder.getCount())-2);
+                encoder_ant.encoder_value = encoder_ant._encoder.getCount();
+            }        
+            else if(encoder_ant._encoder.getCount() > 12)
+            {
+                encoder_ant._encoder.setCount(-(encoder_ant._encoder.getCount())+1);
+                encoder_ant.encoder_value = encoder_ant._encoder.getCount();
             }
-                   
         }
-    if(encoder_ant.encoder_value > 5)
-            return true;
-    return false;
+
+    ant_value = abs(encoder_ant.encoder_value);
+    Serial.print(" Antenne ");
+    Serial.println(ant_value);
+
+    return ant_value;
 }
 
 bool vol_encoder_triggered()
