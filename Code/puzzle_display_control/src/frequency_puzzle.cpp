@@ -155,7 +155,7 @@ bool sliding_bars(int encoder_num,  tsPoint_t touch_raw, int init)
                 Serial.print(solved_values[i-1]);
                 Serial.print(encoder_get_value(i));
                 if(encoder_get_value(i) != solved_values[i-1])
-                {/*
+                {
                     local_tft.fillRoundRect(160, SELECT_FIELD_Y, 400, 100, 10, RA8875_RED);
                     local_tft.drawRoundRect(160, SELECT_FIELD_Y, 400, 100, 10, RA8875_BLACK);
 
@@ -164,8 +164,8 @@ bool sliding_bars(int encoder_num,  tsPoint_t touch_raw, int init)
                     local_tft.textSetCursor(220, 130);
                     local_tft.textTransparent(RA8875_BLUE);
                     local_tft.textWrite("Unknown Frequency!");
-                    //delay(1500);
-                    local_tft.fillRoundRect(160, SELECT_FIELD_Y, 400, 100, 10, BACKGROUND_COLOR);*/
+                    delay(1500);
+                    local_tft.fillRoundRect(160, SELECT_FIELD_Y, 400, 100, 10, BACKGROUND_COLOR);
                     init_sliding_bars();
                     return 0;
                 }      

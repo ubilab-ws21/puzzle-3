@@ -231,16 +231,17 @@ void main_state_machine()
 bool check_touch_or_encoder_events()
 {
     enc_num_triggered = check_game_encoders();
-    if(enc_num_triggered)
-    {
-        set_last_action(enc_num_triggered);
-        return true;
-    }
-    else if(!digitalRead(RA8875_INT))
+    if(!digitalRead(RA8875_INT))
     {
         handleTouchEvent(&raw);
         return true;
     }
+    else if(enc_num_triggered)
+    {
+        set_last_action(enc_num_triggered);
+        return true;
+    }
+    
     
     return false;
 }

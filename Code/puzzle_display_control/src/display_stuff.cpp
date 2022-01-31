@@ -38,8 +38,8 @@ int handleTouchEvent(tsPoint_t * point)
     local_tft.touchRead(&x, &y);
     point->x = x;
     point->y = y;
-    Serial.print("Touch: ");
-    Serial.print(point->x); Serial.print(", "); Serial.println(point->y);
+    //Serial.print("Touch: ");
+    //Serial.print(point->x); Serial.print(", "); Serial.println(point->y);
 
     last_touch_time = millis();
     last_action = last_action_touch;
