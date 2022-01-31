@@ -125,20 +125,20 @@ unsigned int check_ant_encoder()
     int ant_value;
     if (encoder_ant.encoder_value !=  encoder_ant._encoder.getCount())
         {
-            if(encoder_ant._encoder.getCount() >= -12 && encoder_ant._encoder.getCount() <= 12)
+            if(encoder_ant._encoder.getCount() > -12 && encoder_ant._encoder.getCount() <= 12)
             {
                 encoder_ant.encoder_value = encoder_ant._encoder.getCount();
                 
                 Serial.println("Encoder ant count  = " + String((int32_t)encoder_ant.encoder_value));
             }
-            else if(encoder_ant._encoder.getCount() < -12)
+            else if(encoder_ant._encoder.getCount() <= -12)
             {
                 encoder_ant._encoder.setCount(abs(encoder_ant._encoder.getCount())-2);
                 encoder_ant.encoder_value = encoder_ant._encoder.getCount();
             }        
             else if(encoder_ant._encoder.getCount() > 12)
             {
-                encoder_ant._encoder.setCount(-(encoder_ant._encoder.getCount())+1);
+                encoder_ant._encoder.setCount(-(encoder_ant._encoder.getCount())+2);
                 encoder_ant.encoder_value = encoder_ant._encoder.getCount();
             }
         }
