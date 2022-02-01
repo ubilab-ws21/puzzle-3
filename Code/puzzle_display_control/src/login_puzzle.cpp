@@ -438,8 +438,7 @@ bool login_game(tsPoint_t touch_raw)
                         cursor_rect.section = rec_section;
                         section_to_xy(rec_section, &cursor_rect.tr_corner.x, &cursor_rect.tr_corner.y);
                         local_tft.drawRect(cursor_rect.tr_corner.x+5, cursor_rect.tr_corner.y+5, REC_SIZE_X-10, REC_SIZE_Y-10, cursor_rect.color);
-                    }
-                        
+                    }         
                 }
             }
             break;
