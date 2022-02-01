@@ -95,7 +95,7 @@ void setup()
     */
     mp3Player.EQ(DFPLAYER_EQ_NORMAL);
     // Volume 1 to 30
-    mp3Player.volume(15);
+    mp3Player.volume(5);
 
     init_display();
     init_encoder();
