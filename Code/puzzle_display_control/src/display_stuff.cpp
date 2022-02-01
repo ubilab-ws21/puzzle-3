@@ -131,6 +131,9 @@ void section_to_xy(int section, int* x, int* y)
 void first_screen()
 {
     static Adafruit_RA8875 local_tft =  gettft();
+
+    //local_tft.sleep(true);
+    //local_tft.sleep(false);
     local_tft.graphicsMode();
     fill_display(RA8875_BLACK);
  

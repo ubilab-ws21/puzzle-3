@@ -100,7 +100,7 @@ void setup()
     init_display();
     init_encoder();
 
-    state = stateLogin;
+    state = stateIdle;
 
     ant_state = antenna_Level4;
     old_ant_state = antenna_Level4;
@@ -116,14 +116,25 @@ void loop()
 }
 
 unsigned int ant_value;
-
+static Adafruit_RA8875 local_tft =  gettft();
 void main_state_machine()
 {
     switch(state)
     {
     case stateIdle:
-
-    break;
+        if(!flagset)
+        {
+           mp3Player.stop();
+           local_tft.sleep(true);
+           flagset = true;
+        }
+        if(check_game_encoders())
+        {
+            state = stateAntenna;
+            flagset = false;
+            local_tft.sleep(false);
+        }
+        break;
     case stateAntenna:
         if(!flagset)
         {
