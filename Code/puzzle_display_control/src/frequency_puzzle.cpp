@@ -51,7 +51,7 @@ void init_sliding_bars(void)
 
     local_tft.textTransparent(RA8875_CYAN);
 
-    local_tft.textWrite("-------------- +++++ NEWS: Unexpectedly High Enviromental Temperature +++++ --------------------                                       Frequency Select Menu");
+    local_tft.textWrite("-------------- +++++ NEWS: Unexpectedly High Enviromental Temperature +++++ --------------------                                 Ferdi's Radio - Frequency Select Menu");
 
     local_tft.textSetCursor(80, REC_MIN_Y+20);
     local_tft.textTransparent(RA8875_BLUE);
@@ -171,6 +171,7 @@ bool sliding_bars(int encoder_num,  tsPoint_t touch_raw, int init)
                 }      
             }
             // puzzle solved!
+            set_solved_frequency(calc_cur_frequency());
             return 1;
         }
     }
@@ -261,24 +262,6 @@ void update_top_half()
 
     }
 
-/*
-    
-    
-
-    // Render some text! 
-    char string1[5];
-    char dest[5];
-    char last[2]; 
-    
-    //itoa(cur_frequency, string1, 10);
-    //strcpy(dest, string1);
-    //strcpy(last, string1+4);
-    //dest[4] = '\0';
-    local_tft.textTransparent(RA8875_BLUE);
-    local_tft.textEnlarge(2);
-    local_tft.textWrite("hi");*/
-    //local_tft.textSetCursor(300, REC_MIN_Y);
-    //local_tft.textWrite(last);
 }
 
 

@@ -51,7 +51,8 @@ static int function_called_count = 0;
 
 bool removed = true;
 
-
+static char dest[5] = "133";
+static char last[2] = "2";
 
 void init_rect()
 {
@@ -126,6 +127,45 @@ void init_rect()
     local_tft.textWrite("Login");
     local_tft.textSetCursor(350, 40);
     local_tft.textWrite("Space");
+
+    char string1[5];
+    int freq = get_solved_frequency();
+    itoa(freq, string1, 10);
+    strcpy(dest, string1);
+    if(freq >= 1000)
+    {
+        strcpy(last, string1+3);
+        dest[3] = '\0';
+    }
+    else{
+        strcpy(last, string1+2);
+        dest[2] = '\0';
+    }
+
+    local_tft.textSetCursor(25, 10);
+    local_tft.textTransparent(RA8875_BLUE);
+    local_tft.textEnlarge(0);
+
+    local_tft.textWrite("Choosen Frequency:");
+
+    local_tft.textTransparent(RA8875_BLACK);
+    local_tft.textEnlarge(1);
+    local_tft.textSetCursor(50, 25);
+    local_tft.textWrite(dest);
+
+    local_tft.textSetCursor(100, 25);
+    local_tft.textWrite(",");
+    local_tft.textSetCursor(120, 25);
+    local_tft.textWrite(last);
+
+    local_tft.textSetCursor(160, 25);
+    local_tft.textWrite("MHz");
+
+    local_tft.textEnlarge(0);
+    local_tft.textSetCursor(25, 60);
+    local_tft.textWrite("Private Radio Broadcast");
+
+
     local_tft.graphicsMode();
     delay(1000);
 
@@ -157,6 +197,12 @@ void init_rect()
     removed = false;
 
     local_tft.drawRect(cursor_rect.tr_corner.x+5, cursor_rect.tr_corner.y+5, REC_SIZE_X-10, REC_SIZE_Y-10, cursor_rect.color);
+
+    char repl[] = {"-"};
+    for(int i= 0; i<6; i++)
+    {
+        placeholder_letters[i] = repl[0];
+    }
   }
 
 void draw_placeholders()
@@ -231,8 +277,6 @@ bool login_game(tsPoint_t touch_raw)
     case last_action_encoder1:
     case last_action_encoder2:
     case last_action_encoder3:
-
-        
 
         if(!removed)
         {
@@ -316,7 +360,7 @@ bool login_game(tsPoint_t touch_raw)
                     }
             }
 
-            local_tft.fillRect(game_rect.tr_corner.x, game_rect.tr_corner.y, REC_SIZE_X, REC_SIZE_Y, game_rect.color);
+            local_tft.fillRect(x, y, REC_SIZE_X, REC_SIZE_Y, color);
 
             if(rec_section >= 6)
             {
@@ -412,15 +456,7 @@ bool login_game(tsPoint_t touch_raw)
                 section = game_rect.section;
 
                 int placeholder_x, placeholder_y;
-                section_to_xy(cursor_rect.section, &placeholder_x, &placeholder_y);
-
-                //local_tft.fillRect(game_rect.tr_corner.x, game_rect.tr_corner.y, REC_SIZE_X, REC_SIZE_Y, BACKGROUND_COLOR);
-                /*
-                game_rect.tr_corner.x = placeholder_x;
-                game_rect.tr_corner.y = placeholder_y;
-                game_rect.color = color;
-                game_rect.section = free_placeholer_num+18;*/
-                
+                section_to_xy(cursor_rect.section, &placeholder_x, &placeholder_y);                
 
                 local_tft.fillRect(game_rect.tr_corner.x, game_rect.tr_corner.y, REC_SIZE_X, REC_SIZE_Y, game_rect.color);
                 
@@ -592,7 +628,6 @@ void blink_section_letters(bool blink)
     int letter_bg_color;
     int char_x, char_y;
     bool valid_section;
-    bool was_visible = letters_visible;
     Serial.println("BLINK");
     for(section=0; section<18; section++)
     {
@@ -761,6 +796,7 @@ int find_next_free_placeholder(bool right, int rec_section)
     return -1;
 
 }
+
 
 bool is_rect_puzzle_solved()
 {

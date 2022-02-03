@@ -27,7 +27,6 @@ enum
     last_action_touch
 };
 
-
 int handleTouchEvent(tsPoint_t * point);
 int waitForTouchorEncoderEvent(tsPoint_t *point);
 void section_to_xy(int section, int* x, int* y);
@@ -35,5 +34,7 @@ void first_screen(void);
 void final_screen(void);
 void set_last_action(int last);
 int get_last_action(void);
+void set_solved_frequency(int freq);
+int get_solved_frequency();
 
 #endif

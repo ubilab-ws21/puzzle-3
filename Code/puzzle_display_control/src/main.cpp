@@ -49,9 +49,7 @@ enum AntennaState{
     antenna_NoNoise = 0,
     antenna_Level0 = 10, 
     antenna_Level1 = 11,
-    antenna_Level2 = 11,
-    antenna_Level3 = 12,
-    antenna_Level4 = 12
+    antenna_Level2 = 12
 };
 
 int enc_num_triggered = 0;
@@ -70,9 +68,6 @@ GameState state;
 // the current and the old antenna state (old one is needed for comparison)
 AntennaState ant_state;
 AntennaState old_ant_state;
-
-int noise_arrays[5] = {antenna_Level0, antenna_Level1, antenna_Level2, antenna_Level3, antenna_Level4};
-
 
 void setup()
 {
@@ -102,8 +97,8 @@ void setup()
 
     state = stateIdle;
 
-    ant_state = antenna_Level4;
-    old_ant_state = antenna_Level4;
+    ant_state = antenna_Level2;
+    old_ant_state = antenna_Level2;
 }
 
 /**************************************************************************/
@@ -115,7 +110,7 @@ void loop()
     main_state_machine();
 }
 
-unsigned int ant_value;
+unsigned int ant_value = 0;
 static Adafruit_RA8875 local_tft =  gettft();
 void main_state_machine()
 {
@@ -133,13 +128,16 @@ void main_state_machine()
             state = stateAntenna;
             flagset = false;
             local_tft.sleep(false);
+            // set antenna encoder to zero. 
+            encoder_set_value(4, 0);
         }
         break;
     case stateAntenna:
         if(!flagset)
         {
             Serial.println("case 0");
-            mp3Player.loopFolder(antenna_Level4);
+            check_correct_antenna_pos(ant_value);
+            mp3Player.loopFolder(ant_state);
             first_screen();
             flagset = true;   
         }
@@ -148,6 +146,8 @@ void main_state_machine()
         if(check_correct_antenna_pos(ant_value))
         {
             state = stateFrequency;
+            mp3Player.stop();
+            delay(100);
             flagset = false;
         }
         else
@@ -157,24 +157,21 @@ void main_state_machine()
                 mp3Player.loopFolder(ant_state);
                 old_ant_state = ant_state;
             }
-            else{
-                Serial.println("do nothing");
-            }
         }
         break;
     case stateFrequency:
         if(!flagset){
             Serial.println("case 1");
-            mp3Player.loopFolder(ESA);
+            
             fill_display(BACKGROUND_COLOR);
             encoder_set_value(1, 0);
             encoder_set_value(2, 0);
             encoder_set_value(3, 0);
             init_sliding_bars();
+            mp3Player.loopFolder(ESA);
 
             flagset = true;
         }
-        
         if(check_touch_or_encoder_events())
         {
             solved = sliding_bars(enc_num_triggered, raw, 0);
@@ -225,8 +222,8 @@ void main_state_machine()
         mp3Player.volume(new_vol);
     }
 
-    /*
-    if(state != stateAntenna)
+    
+    if(state > stateAntenna)
     { 
         ant_value = check_ant_encoder();
 
@@ -236,7 +233,7 @@ void main_state_machine()
             flagset = false;
             state = stateAntenna;
         }
-    }*/
+    }
 }
 int last_touched = millis();
 bool check_touch_or_encoder_events()
@@ -262,19 +259,11 @@ bool check_touch_or_encoder_events()
 
 bool check_correct_antenna_pos(unsigned int ant_value)
 {
-        if(ant_value < 2)
-        {
-            ant_state = antenna_Level4;
-        }
-        else if(ant_value < 4)
-        {
-            ant_state = antenna_Level3;
-        }
-        else if(ant_value < 6)
+        if(ant_value < 4)
         {
             ant_state = antenna_Level2;
         }
-        else if(ant_value < 8)
+        else if(ant_value < 6)
         {
             ant_state = antenna_Level1;
         }
@@ -284,7 +273,7 @@ bool check_correct_antenna_pos(unsigned int ant_value)
         }
         else if(ant_value <= ANTENNA_CORRECT_POS)
         {
-            Serial.print("correct");
+            //Serial.print("correct");
             return true;
         }
         return false;

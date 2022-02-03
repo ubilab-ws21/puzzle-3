@@ -177,4 +177,14 @@ void encoder_set_value(int encoder_num, int value)
         encoder[encoder_num-1].encoder_value = value; 
         encoder[encoder_num-1]._encoder.setCount(encoder[encoder_num-1].encoder_value);
     }
+    else if(encoder_num == 4)
+    {
+        encoder_ant.encoder_value = value;
+        encoder_ant._encoder.setCount(encoder_ant.encoder_value);
+    }
+    else if(encoder_num == 5)
+    {
+        encoder_vol.encoder_value = value;
+        encoder_vol._encoder.setCount(encoder_vol.encoder_value);
+    }
 }

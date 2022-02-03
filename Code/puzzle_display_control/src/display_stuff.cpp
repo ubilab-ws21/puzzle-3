@@ -2,6 +2,7 @@
 
 
 unsigned long last_touch_time;
+int frequency;
 
 int last_action = last_action_none;
 
@@ -14,6 +15,15 @@ int get_last_action()
 {
     return last_action;
 }
+
+void set_solved_frequency(int freq){
+    frequency = freq;
+}
+
+int get_solved_frequency(){
+    return frequency;
+}
+
 
 /**************************************************************************/
 /*!
