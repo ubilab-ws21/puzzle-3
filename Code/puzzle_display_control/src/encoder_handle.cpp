@@ -79,6 +79,12 @@ void init_encoder()
 }
 
 int old_val = 0;
+
+/***********************************************************************
+* This function checks if any of the game encoders (the encoders on the top)
+* have been triggered and if yes, it saves the new value and 
+* returns the corresponding encoder number 
+***********************************************************************/
 int check_game_encoders()
 {
     int i;
@@ -101,6 +107,11 @@ int check_game_encoders()
     return 0;
 }
 
+/***********************************************************************
+* This function checks if the volume encoder (the encoder on the side)
+* has been triggered and if yes, it saves the new value, sets the ne_volume 
+* variable accordingly and returns true
+***********************************************************************/
 bool check_vol_encoder(int* new_volume)
 {
     if (encoder_vol.encoder_value !=  encoder_vol._encoder.getCount())
@@ -120,6 +131,12 @@ bool check_vol_encoder(int* new_volume)
     return false;
 }
 
+/***********************************************************************
+* This function checks if the antenna encoder (the encoder inside the radio)
+* has been triggered and if yes, it makes sure that the value is always between 
+* -12 and 12, it saves the new value and returns an unsigned 
+* version of the value, which is between 0 and 12.
+***********************************************************************/
 unsigned int check_ant_encoder()
 {
     int ant_value;
@@ -148,14 +165,9 @@ unsigned int check_ant_encoder()
     return ant_value;
 }
 
-bool vol_encoder_triggered()
-{
-    if (encoder_vol.encoder_value !=  encoder_vol._encoder.getCount())
-        return true;
-    else
-        return false;
-}
-
+/***********************************************************************
+* returns the saved value of the corresponding encoder
+***********************************************************************/
 int encoder_get_value(int encoder_num)
 {
     if(encoder_num <= NUM_ENCODERS_DEFINED && encoder_num > 0)
@@ -165,6 +177,9 @@ int encoder_get_value(int encoder_num)
     return -1;
 }
 
+/***********************************************************************
+* sets the saved value of the corresponding encoder
+***********************************************************************/
 void encoder_set_value(int encoder_num, int value)
 {
     Serial.print("set encoder ");
@@ -172,18 +187,19 @@ void encoder_set_value(int encoder_num, int value)
     Serial.print(" to value ");
     if(encoder_num <= NUM_ENCODERS_DEFINED && encoder_num > 0)
     {
-        
         Serial.print(value);
         encoder[encoder_num-1].encoder_value = value; 
         encoder[encoder_num-1]._encoder.setCount(encoder[encoder_num-1].encoder_value);
     }
     else if(encoder_num == 4)
     {
+        // encoder 4 is the antenna controller
         encoder_ant.encoder_value = value;
         encoder_ant._encoder.setCount(encoder_ant.encoder_value);
     }
     else if(encoder_num == 5)
     {
+        // encoder 5 is the volume controller
         encoder_vol.encoder_value = value;
         encoder_vol._encoder.setCount(encoder_vol.encoder_value);
     }

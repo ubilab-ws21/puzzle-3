@@ -24,7 +24,6 @@ void draw_placeholder_letters(void);
 void shift_letter(int cur_section, int cur_cursor_section);
 bool isNewRecToCome(int rect_selected_num);
 bool is_rect_here(int section);
-int position_occupied(int section);
 int find_next_free_placeholder(bool right, int rec_section);
 bool is_rect_puzzle_solved(void);
 void dissapearing_letters(void);

@@ -5,6 +5,7 @@
 
 #include "Fonts/FreeSerifBoldItalic9pt7b.h"
 
+// important defines
 #define LETTER_OFFSET 10
 
 #define STEP_SIZE 25
@@ -14,12 +15,12 @@
 #define SCREEN_SIZE_X 800
 #define SCREEN_SIZE_Y 480
 
-
+// letters array and their positions
 char letters[18];
-
 int orig_valid_sections[18] = {0,1,1,1,0,1,0,1,1,1,0,1,1,1,0,1,0,1};
 int valid_sections[18] = {};
 
+// possible sections for touch events
 enum{
     NONE_SECTION = 0,
     SHOW_SECTION,
@@ -27,65 +28,55 @@ enum{
     LETTER_SECTION
 };
 
-
-int free_placeholer_num = 0;
+// array for letters in the placeholder area (the area where to enter the letters for the password)
+// at first no letter is in this area, indicated by "-----"
 char placeholder_letters[7] = "------";
+// the 6 placeholder rectangles that are permanently displayed to indicate where to enter to password
+rect letter_place[6];
 
-tsPoint_t letter;
-tsPoint_t calibrated;
-tsPoint_t midpoint;
-
-int num_rect_visible;
-int rect_selected_num;
-
+// The two different rectangles that can be moved on the screen
 rect game_rect;
 rect cursor_rect;
 
-rect letter_place[6];
-
-
-
-bool letters_visible = false;
-
-static int function_called_count = 0;
+// whether reset button was pressed.
+bool reset_pressed = false;
 
 bool removed = true;
 
-static char dest[5] = "133";
-static char last[2] = "2";
+// default frequency is 1332 MHz. This value will be changed as soon as the game starts:
+// Then, these values will be replaced by the saved frequency from the previous game.
+static char freq_pre_comma[5] = "133";
+static char freq_post_comma[2] = "2";
 
+/**********************************************************************************************************
+* This function initializes the rectangle login game. It displays an introduction to the game, draws the 
+* permanently given information on top of the screen, starts random number generation and displays the 
+* letters on the screen.
+**********************************************************************************************************/ 
 void init_rect()
 {
-    static tsMatrix_t local_matrix = gettsMatrix();
     static Adafruit_RA8875 local_tft = gettft();
 
     local_tft.fillScreen(BACKGROUND_COLOR);
 
+    // first game rectangle position is in section 0, which is the top left section.
     game_rect.tr_corner.x = 0;
     game_rect.tr_corner.y =  REC_MIN_Y;
     game_rect.section = 0;
     game_rect.color = RA8875_BLUE;
 
+    // first cursor rectangle position is in section 18, which is the bottom left section (placeholder area)
     cursor_rect.section = 18;
     section_to_xy(cursor_rect.section, &cursor_rect.tr_corner.x, &cursor_rect.tr_corner.y);
     cursor_rect.color = RA8875_RED;
 
-    calibrateTSPoint(&game_rect.tr_corner_cal, &game_rect.tr_corner, &local_matrix);
-    Serial.println(game_rect.tr_corner_cal.x);
-    Serial.println(game_rect.tr_corner_cal.y);
-
-    local_tft.fillRect(game_rect.tr_corner.x,game_rect.tr_corner.y, REC_SIZE_X, REC_SIZE_Y, game_rect.color);
-
-    num_rect_visible = 1;
-    rect_selected_num = 0;
-
-    // initialize letter placeholder game_rect: Here the Letter game_rect must be placed in order to solve the puzzle.
+    // initialize letter placeholder area: Here the password "manual" must be placed in order to solve the puzzle.
     int x, y;
-
     int i;
-    
+    // display "PASSWD" in the placeholder area to indicate that here the password has to be entered.
     char password[7] = "PASSWD";
 
+    // blink PASSWD 3 times. 
     for(int j = 0; j<3; j++)
     {
         fill_display(RA8875_BLACK);
@@ -104,19 +95,20 @@ void init_rect()
         delay(500);
     }
 
-    delay(500);
+    delay(250);
+
+    // now initialize the proper display. 
     fill_display(BACKGROUND_COLOR);
 
+    // #TODO: duplicaate?
     for(i = 0; i<6; i++)
     {
-        /*
-        local_tft.drawRect(letter_place[i].tr_corner.x+10, letter_place[i].tr_corner.y, REC_SIZE_X-15, REC_SIZE_Y-30, letter_place[i].color);
-        */
         local_tft.fillRect(letter_place[i].tr_corner.x, letter_place[i].tr_corner.y, REC_SIZE_X, REC_SIZE_Y-1, RA8875_YELLOW);
         local_tft.drawRect(letter_place[i].tr_corner.x, letter_place[i].tr_corner.y, REC_SIZE_X, REC_SIZE_Y-1, letter_place[i].color);
         local_tft.drawChar(letter_place[i].tr_corner.x+40, letter_place[i].tr_corner.y+40, password[i], RA8875_RED, RA8875_YELLOW, 8);
     }
 
+    // print information on top of the screen. 
     local_tft.drawFastHLine(0, REC_MIN_Y-1, SCREEN_SIZE_X, RA8875_BLUE);
     local_tft.textMode();
     local_tft.textTransparent(RA8875_RED);
@@ -128,18 +120,19 @@ void init_rect()
     local_tft.textSetCursor(350, 40);
     local_tft.textWrite("Space");
 
+    // print the current radio broadcast frequency on the top left of the screen
     char string1[5];
     int freq = get_solved_frequency();
     itoa(freq, string1, 10);
-    strcpy(dest, string1);
+    strcpy(freq_pre_comma, string1);
     if(freq >= 1000)
     {
-        strcpy(last, string1+3);
-        dest[3] = '\0';
+        strcpy(freq_post_comma, string1+3);
+        freq_pre_comma[3] = '\0';
     }
     else{
-        strcpy(last, string1+2);
-        dest[2] = '\0';
+        strcpy(freq_post_comma, string1+2);
+        freq_pre_comma[2] = '\0';
     }
 
     local_tft.textSetCursor(25, 10);
@@ -151,12 +144,12 @@ void init_rect()
     local_tft.textTransparent(RA8875_BLACK);
     local_tft.textEnlarge(1);
     local_tft.textSetCursor(50, 25);
-    local_tft.textWrite(dest);
+    local_tft.textWrite(freq_pre_comma);
 
     local_tft.textSetCursor(100, 25);
     local_tft.textWrite(",");
     local_tft.textSetCursor(120, 25);
-    local_tft.textWrite(last);
+    local_tft.textWrite(freq_post_comma);
 
     local_tft.textSetCursor(160, 25);
     local_tft.textWrite("MHz");
@@ -165,25 +158,17 @@ void init_rect()
     local_tft.textSetCursor(25, 60);
     local_tft.textWrite("Private Radio Broadcast");
 
-
     local_tft.graphicsMode();
     delay(1000);
 
-    for(i = 0; i<6; i++)
-    {
-        /*
-        local_tft.drawRect(letter_place[i].tr_corner.x+10, letter_place[i].tr_corner.y, REC_SIZE_X-15, REC_SIZE_Y-30, letter_place[i].color);
-        */
-        local_tft.fillRect(letter_place[i].tr_corner.x, letter_place[i].tr_corner.y, REC_SIZE_X, REC_SIZE_Y-1, RA8875_YELLOW);
-        local_tft.drawRect(letter_place[i].tr_corner.x, letter_place[i].tr_corner.y, REC_SIZE_X, REC_SIZE_Y-1, letter_place[i].color);
-    }
+    // draw all 6 letter placeholders (password area)
+    draw_placeholders();
 
-    //draw_showbutton(0);
+    // draw the reset button on the top right of the screen.
     draw_reset_button();
 
+    // draw the game rectangle on the first section.
     local_tft.fillRect(game_rect.tr_corner.x, game_rect.tr_corner.y, REC_SIZE_X, REC_SIZE_Y, game_rect.color);
-    
-    free_placeholer_num = 0;
 
     for(i = 0; i<18; i++)
     {
@@ -191,6 +176,7 @@ void init_rect()
     }
 
     random_letter_generation(true);
+    reset_pressed = false;
 
     // show all letters
     blink_section_letters(false); 
@@ -205,6 +191,9 @@ void init_rect()
     }
   }
 
+/******************************************************************************************************
+* This function draws the six placeholders where the password needs to be entered.
+******************************************************************************************************/
 void draw_placeholders()
 {
     static Adafruit_RA8875 local_tft = gettft();
@@ -218,6 +207,9 @@ void draw_placeholders()
     }
 }
 
+/******************************************************************************************************
+* This function draws the showbutton. Not used now
+******************************************************************************************************/
 void draw_showbutton(int counter)
 {
     static Adafruit_RA8875 local_tft = gettft();
@@ -244,6 +236,9 @@ void draw_showbutton(int counter)
     local_tft.graphicsMode();
 }
 
+/******************************************************************************************************
+* This function draws the reset button.
+******************************************************************************************************/
 void draw_reset_button()
 {
     static Adafruit_RA8875 local_tft = gettft();
@@ -257,7 +252,10 @@ void draw_reset_button()
     local_tft.textWrite("RESET");
     local_tft.graphicsMode();
 }
-
+/******************************************************************************************************
+* This function is the main function for the login game. The user is required to place the letters
+* of the password ("manual") into the password space on the bottom.
+******************************************************************************************************/
 bool login_game(tsPoint_t touch_raw)
 {
     static Adafruit_RA8875 local_tft = gettft();
@@ -280,12 +278,13 @@ bool login_game(tsPoint_t touch_raw)
 
         if(!removed)
         {
+            // remove letters if they have not been removed yet
             Serial.print("Calling from enc 123");
             remove_section_letters();
             removed = true; 
-            letters_visible = false;
         }
         
+        // check direction of encoder movement.
         int sign; 
         if(encoder_get_value(cur_encoder_num) < 0)
             sign = -1;
@@ -359,11 +358,12 @@ bool login_game(tsPoint_t touch_raw)
                         }
                     }
             }
-
+            // print new rectangle
             local_tft.fillRect(x, y, REC_SIZE_X, REC_SIZE_Y, color);
 
             if(rec_section >= 6)
             {
+                // make sure that the placeholders have not been removed.
                 draw_placeholder_letters();
             }
         }
@@ -374,6 +374,8 @@ bool login_game(tsPoint_t touch_raw)
             y = cursor_rect.tr_corner.y;
             rec_section = cursor_rect.section;
             color = cursor_rect.color;
+
+            // check encoder movement direction.
             if(sign == 1)
             {
                 Serial.println((rec_section+1) % NUM_SECTIONS_X);
@@ -413,15 +415,21 @@ bool login_game(tsPoint_t touch_raw)
                     }
                 }
             }
+
+            // draw placeholders (password area) and letters in there
             draw_placeholders();
             draw_placeholder_letters();
             local_tft.drawRect(cursor_rect.tr_corner.x+5, cursor_rect.tr_corner.y+5, REC_SIZE_X-10, REC_SIZE_Y-10, cursor_rect.color);
         }
+
+        // reset encoder value to 0
         encoder_set_value(cur_encoder_num, 0);
         last_action = last_action_none;
 
         break;
     case last_action_touch:
+        // a touch event was triggered.
+
         tsPoint_t calibrated;
         //Calcuate the real X/Y position based on the calibration matrix 
         calibrateTSPoint(&calibrated, &touch_raw, &local_matrix);
@@ -441,13 +449,15 @@ bool login_game(tsPoint_t touch_raw)
         */
         case RESET_SECTION:
             // this will result in resetting the game
-            function_called_count = 5;
+            reset_pressed = true;
             break;
         case LETTER_SECTION:
+            // a letter section has been touched. 
             int section = get_section(calibrated.x, calibrated.y);
 
             if(game_rect.section == section)
             {
+                // only do something if touched section matches the section of the rectangle
                 Serial.println("section");
                 Serial.println(section);
                 x = game_rect.tr_corner.x;
@@ -462,14 +472,18 @@ bool login_game(tsPoint_t touch_raw)
                 
                 if(is_section_with_letter(section))
                 {
+                    // if section is a section containing a letter, shift this letter to the current cursor position in the password space
                     char mychar = get_letter(section);
                     shift_letter(section, cursor_rect.section);
                     Serial.println(mychar);
                     local_tft.drawChar(placeholder_x + 50, placeholder_y + 50, mychar, RA8875_BLACK, RA8875_YELLOW , 5);
                     rec_section = cursor_rect.section;
+
+                    // try to find next free placeholder for cursor rectangle in the password area
                     rec_section = find_next_free_placeholder(true, rec_section);
                     if(rec_section != -1)
                     {
+                        // place cursor in this next free placeholder.
                         local_tft.drawRect(cursor_rect.tr_corner.x+5, cursor_rect.tr_corner.y+5, REC_SIZE_X-10, REC_SIZE_Y-10, RA8875_YELLOW);
                         cursor_rect.section = rec_section;
                         section_to_xy(rec_section, &cursor_rect.tr_corner.x, &cursor_rect.tr_corner.y);
@@ -483,14 +497,18 @@ bool login_game(tsPoint_t touch_raw)
         break;
     }
     
-    if(find_next_free_placeholder(true, 18) == -1 || function_called_count > 4)
+    // Do we need to check whether the game was successfully solved? This is the case when there is no free placeholder anymore in the password area.
+    if(find_next_free_placeholder(true, 18) == -1 || reset_pressed)
     {
-        if(is_rect_puzzle_solved())
-        {
+        if(is_rect_puzzle_solved() && !reset_pressed)
+        {   
+            // password entered correctly, puzzle solved.
             return 1;
         }
         else
-        {
+        {   
+            // worng password entered or if reset button was pressed.
+            // Re-initialize the game.
             init_rect();
         }
     }    
@@ -498,6 +516,9 @@ bool login_game(tsPoint_t touch_raw)
     return 0;
 }
 
+/***********************************************************************
+* This function checks which section was touched
+***********************************************************************/
 int what_was_touched(int x, int y)
 {
     if(y < REC_MIN_Y)
@@ -515,13 +536,20 @@ int what_was_touched(int x, int y)
     }
 }
 
+/***********************************************************************
+* This function converts x and y coordinates into the corresponding section 
+***********************************************************************/
 int get_section(int x, int y)
 {
     int section = ((y-REC_MIN_Y)/REC_SIZE_Y)*NUM_SECTIONS_X + (x/REC_SIZE_X);
     return section;
 }
 
-
+/***********************************************************************
+* This function checks whether the choosen section contains a letter.
+* This is the case when it is a valid section where it has not been 
+* shifted yet
+***********************************************************************/
 bool is_section_with_letter(int section)
 {
     if(valid_sections[section] == true)
@@ -529,49 +557,34 @@ bool is_section_with_letter(int section)
     return false;
 }
 
+/***********************************************************************
+* This function randomly creates letters for the Letter section and saves 
+* them in the letter[] array which has 18 elements. 
+***********************************************************************/
 bool random_letter_generation(bool init)
 {
-    if(init)
-    {
-        function_called_count=0;    
-    }
-    else
-    {
-        function_called_count++;
-        draw_showbutton(function_called_count);
-        if(function_called_count > 4)
-        {
-            return false; 
-        }
-    }
-
-    Serial.println("counter = " +  String(function_called_count));
     static int random_start;
     char manual[7] = "MANUAL";
-    if(!(function_called_count))
+    
+    random_start = rand() % 6;
+    Serial.println("random start: " + String(random_start));
+
+    for(int i = 0; i<18; i++)
     {
-
-        //function_called_count = 0;
-        random_start = rand() % 6;
-        Serial.println("random start: " + String(random_start));
-
-        for(int i = 0; i<18; i++)
+        letters[i] = 'A' + (rand() % 26);
+    }
+    int counter = 0;
+    for(int i = 0; i<18; i+=2)
+    {
+        while(!is_section_with_letter(i))
         {
-            letters[i] = 'A' + (rand() % 26);
+            i++;
         }
-        int counter = 0;
-        for(int i = 0; i<18; i+=2)
-        {
-            while(!is_section_with_letter(i))
-            {
-                i++;
-            }
-            Serial.println("now: " + String((random_start + counter + 6) % 6));
-            letters[i] = manual[(random_start + counter + 6) % 6];
-            counter++;
-            if(counter == 6)
-                break;
-        }
+        Serial.println("now: " + String((random_start + counter + 6) % 6));
+        letters[i] = manual[(random_start + counter + 6) % 6];
+        counter++;
+        if(counter == 6)
+            break;
     }
 
     for(int i = 0; i<18; i++)
@@ -582,11 +595,18 @@ bool random_letter_generation(bool init)
     return true;
 }
 
+/***********************************************************************
+* returns the letter in this section 
+***********************************************************************/
 char get_letter(int section)
 {
     return letters[section];
 }
 
+/***********************************************************************
+* This function makes all letters in the letter section invisible. Happens
+* as soon as an encoder was triggered
+***********************************************************************/
 void remove_section_letters()
 {
     static Adafruit_RA8875 local_tft = gettft();
@@ -618,9 +638,12 @@ void remove_section_letters()
             local_tft.drawChar(char_x + 50, char_y + 50, mychar, letter_color, letter_bg_color, 5);
         }
     }
-    letters_visible = false;
 }
 
+/***********************************************************************
+* This function makes all letters in the letter section visible. 
+* Happens in the beginning of a game
+***********************************************************************/
 void blink_section_letters(bool blink)
 {
     static Adafruit_RA8875 local_tft = gettft();
@@ -647,7 +670,6 @@ void blink_section_letters(bool blink)
         local_tft.drawChar(char_x+50, char_y+50, mychar, RA8875_BLACK, letter_bg_color , 5);
         }
     }
-    letters_visible = true;
     removed = false;
     }/*
     if(blink || was_visible)
@@ -683,6 +705,10 @@ void blink_section_letters(bool blink)
     }
 }*/
 
+/***********************************************************************
+* This function draws all currently active placeholder letters (letters in the
+* password area)
+***********************************************************************/
 void draw_placeholder_letters()
 {
     static Adafruit_RA8875 local_tft = gettft();
@@ -704,6 +730,9 @@ void draw_placeholder_letters()
     }
 }
 
+/***********************************************************************
+* checks if there is a rectangle in this section 
+***********************************************************************/
 bool is_rect_here(int section)
 {
     if(game_rect.section == section)
@@ -713,6 +742,10 @@ bool is_rect_here(int section)
     return false;
 }
 
+/***********************************************************************
+* This function shifts the letter from the current rectangle section 
+* to the current cursor section 
+***********************************************************************/
 void shift_letter(int cur_section, int cur_cursor_section)
 {
     if(is_section_with_letter(cur_section))
@@ -720,24 +753,14 @@ void shift_letter(int cur_section, int cur_cursor_section)
         char letter = get_letter(cur_section);
         valid_sections[cur_section] = 0;
         placeholder_letters[cur_cursor_section-18] = letter;
-        free_placeholer_num++;
     }
 }
 
-int position_occupied(int section)
-{
-    Serial.println(rect_selected_num);
-
-    if(game_rect.section == section)
-    {
-        Serial.print("next position occuppied. section: ");
-        return 1; 
-    }
-                
-    Serial.println("next position not occupied");
-    return 0;
-}
-
+/***********************************************************************
+* This function finds the next free placeholder (i.e. not containing a letter
+* yet), where the cursore can then be placed. It can be specified whether to 
+* look for a free placeholder to the right or to the left of the current section 
+***********************************************************************/
 int find_next_free_placeholder(bool right, int rec_section)
 {
     int skip_recs = 0;
@@ -797,7 +820,10 @@ int find_next_free_placeholder(bool right, int rec_section)
 
 }
 
-
+/***********************************************************************
+* This function checks whether the game was solved, i.e. if "MANUAL" was 
+* entered to the password space
+***********************************************************************/
 bool is_rect_puzzle_solved()
 {
     int i;
