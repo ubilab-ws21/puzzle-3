@@ -23,15 +23,18 @@ void init_encoder()
 
 	// use pin 19 and 18 for the first encoder
 	encoder[0]._encoder.attachSingleEdge(33, 32);
+    encoder[0]._encoder.setFilter(1023);
 	// use pin 17 and 16 for the second encoder
 	
     if(NUM_ENCODERS_DEFINED > 1)
     {
         encoder[1]._encoder.attachSingleEdge(26, 25);
+        encoder[1]._encoder.setFilter(1023);
     }
     if(NUM_ENCODERS_DEFINED > 2)
     {
         encoder[2]._encoder.attachSingleEdge(17, 16);
+        encoder[2]._encoder.setFilter(1023);
     }
 		
     int i;
@@ -55,6 +58,7 @@ void init_encoder()
 
     // init volume encoder
     encoder_ant._encoder.attachSingleEdge(34, 35);
+    encoder_ant._encoder.setFilter(1023);
 
     // set starting count value after attaching
     encoder_ant._encoder.setCount(0);
@@ -68,6 +72,7 @@ void init_encoder()
 
     // init volume encoder
     encoder_vol._encoder.attachSingleEdge(22, 21);
+    encoder_vol._encoder.setFilter(1023);
 
     // set starting count value after attaching
     encoder_vol._encoder.setCount(15);
