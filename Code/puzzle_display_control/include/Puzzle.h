@@ -45,7 +45,7 @@ WiFiClient mqttClient;
 PubSubClient mqtt(mqttClient);
 
 // Global cstring for message building
-#define MSG_SIZE 50
+#define MSG_SIZE 100
 char msg[MSG_SIZE] = {'\0'};
 
 // Enum and global variable for puzzle game control
