@@ -250,7 +250,7 @@ void main_state_machine()
             #endif
             
             #ifdef MQTT
-            mqtt_publish("3/gamecontrol/antenna","state","solved");         //send to operator
+            mqtt_publish("3/gamecontrol/antenna","status","solved");         //send to operator
             mqtt_publish("game/puzzle3/antenna","trigger","solved");        //send to hintsystem
             #endif
         }
@@ -297,7 +297,7 @@ void main_state_machine()
             #endif
             solved = false;
             #ifdef MQTT
-            mqtt_publish("3/gamecontrol/map","state","solved");         //send to operator
+            mqtt_publish("3/gamecontrol/map","status","solved");         //send to operator
             mqtt_publish("game/puzzle3/map","trigger","solved");        //send to hintsystem
             #endif
         }       
@@ -341,7 +341,7 @@ void main_state_machine()
             flagset = false;
             #endif
             #ifdef MQTT
-            mqtt_publish("3/gamecontrol/touchgame","state","solved");       //send to operator
+            mqtt_publish("3/gamecontrol/touchgame","status","solved");       //send to operator
             mqtt_publish("game/puzzle3/touchgame","trigger","solved");      //send to hintsystem
             #endif
         }
@@ -465,7 +465,7 @@ const char * handleMsg(const char * msg, const char* topic) {
     flagset = false;
     state = stateAntenna;
     Serial.println("Antenna");
-    mqtt_publish("3/gamecontrol/antenna","state","active");
+    mqtt_publish("3/gamecontrol/antenna","status","active");
     mqtt_publish("game/puzzle3/antenna","trigger","active_1");  //release first hint for the antenna game
   } else if ((strcmp(topic,"3/gamecontrol/map") == 0) && (strcmp(msg, "off") == 0)){
     //puzzleIdle(); //maybe different idle state required
@@ -474,7 +474,7 @@ const char * handleMsg(const char * msg, const char* topic) {
   } else if ((strcmp(topic,"3/gamecontrol/map") == 0) && (strcmp(msg, "on") == 0)) {
     //puzzleMap();
     Serial.println("Map");
-    mqtt_publish("3/gamecontrol/map","state","active");
+    mqtt_publish("3/gamecontrol/map","status","active");
     mqtt_publish("game/puzzle3/map","trigger","active_1");  //release first hint for the map/frequency game
     flagset = false;
     state = stateFrequency;
@@ -486,7 +486,7 @@ const char * handleMsg(const char * msg, const char* topic) {
     state = stateIdle;
   } else if ((strcmp(topic,"3/gamecontrol/touchgame") == 0) && (strcmp(msg, "on") == 0)) {
     //puzzleTouchgame();
-    mqtt_publish("3/gamecontrol/touchgame","state","active");
+    mqtt_publish("3/gamecontrol/touchgame","status","active");
     mqtt_publish("game/puzzle3/touchgame","trigger","active_1");
     flagset = false;
     state = stateLogin;
