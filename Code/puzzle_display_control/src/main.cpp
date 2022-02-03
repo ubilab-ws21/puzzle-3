@@ -21,6 +21,8 @@
 #define LOW_NOISE 10
 #define rickroll 99 // default.
 
+#define INIT_VOLUME 15
+
 #define ANTENNA_CORRECT_POS 12
 
 void main_state_machine();
@@ -90,7 +92,7 @@ void setup()
     */
     mp3Player.EQ(DFPLAYER_EQ_NORMAL);
     // Volume 1 to 30
-    mp3Player.volume(5);
+    mp3Player.volume(INIT_VOLUME);
 
     init_display();
     init_encoder();

@@ -70,7 +70,7 @@ void init_encoder()
     encoder_vol._encoder.attachSingleEdge(22, 21);
 
     // set starting count value after attaching
-    encoder_vol._encoder.setCount(10);
+    encoder_vol._encoder.setCount(15);
 
     // clear the encoder's raw count and set the tracked count to zero
     //encoder2.clearCount();
