@@ -27,7 +27,7 @@
 
 #define ANTENNA_CORRECT_POS 12
 
-//#define MQTT
+#define MQTT
 //#define OPERATORCONTROL
 
 void main_state_machine();
@@ -103,6 +103,8 @@ void setup()
     mp3Player.EQ(DFPLAYER_EQ_NORMAL);
     // Volume 1 to 30
     mp3Player.volume(INIT_VOLUME);
+
+    mp3Player.stop();
 
     init_display();
     init_encoder();
@@ -207,16 +209,23 @@ void main_state_machine()
         if(!flagset)
         {
            mp3Player.stop();
-           local_tft.sleep(true);
+           
+           Serial.print("init idle");
+           local_tft.sleep(true); 
            flagset = true;
         }
         if(check_game_encoders())
         {
+            Serial.print("game encoders turned");
             state = stateAntenna;
             flagset = false;
-            local_tft.sleep(false);
+            //local_tft.displayOn(true); 
+            local_tft.sleep(false); 
             // set antenna encoder to zero. 
             encoder_set_value(4, 0);
+            encoder_set_value(1, 0);
+            encoder_set_value(2, 0);
+            encoder_set_value(3, 0);
         }
         break;
     case stateAntenna:
@@ -267,7 +276,6 @@ void main_state_machine()
 
             flagset = true;
             startTimeMap = millis();
-            
         }
         if(check_touch_or_encoder_events())
         {
@@ -445,11 +453,12 @@ const char * handleMsg(const char * msg, const char* topic) {
   // strcmp returns zero on a match
   if (strcmp(msg, "solved") == 0) {
     //puzzleSolved();
-    state = stateDone;
+    //state = stateDone;
   } else if ( (strcmp(topic,"3/gamecontrol/antenna") == 0) && (strcmp(msg, "off") == 0)) {
     //puzzleIdle(); //maybe different idle state required
     flagset = false;
     state = stateIdle;
+    //local_tft.fillScreen(RA8875_BLACK);
     Serial.println("Idle");
   } else if ( (strcmp(topic,"3/gamecontrol/antenna") == 0) && (strcmp(msg, "on") == 0)) {
     //puzzleAntenna();
@@ -469,6 +478,8 @@ const char * handleMsg(const char * msg, const char* topic) {
     mqtt_publish("game/puzzle3/map","trigger","active_1");  //release first hint for the map/frequency game
     flagset = false;
     state = stateFrequency;
+    ant_value = ANTENNA_CORRECT_POS;
+    encoder_set_value(4, ANTENNA_CORRECT_POS);
   } else if ((strcmp(topic,"3/gamecontrol/touchgame") == 0) && (strcmp(msg, "off") == 0)){
     //puzzleIdle(); //maybe different idle state required
     flagset = false;
@@ -479,6 +490,9 @@ const char * handleMsg(const char * msg, const char* topic) {
     mqtt_publish("game/puzzle3/touchgame","trigger","active_1");
     flagset = false;
     state = stateLogin;
+    ant_value = ANTENNA_CORRECT_POS;
+    encoder_set_value(4, ANTENNA_CORRECT_POS);
+    set_solved_frequency(1332);
     Serial.println("Touch");
   } else if (strcmp(msg, "idle") == 0) {
     //puzzleIdle();
