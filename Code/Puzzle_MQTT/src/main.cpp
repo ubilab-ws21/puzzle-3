@@ -76,9 +76,6 @@ void loop() {
   ArduinoOTA.handle();
   // Checks for MQTT subscriptions
   mqtt.loop();
-  // Change state from idle to active afterwards cycle between
-  // solved and active
-
 
   if (gameState == idle) {
      puzzleIdle();
@@ -97,7 +94,7 @@ void loop() {
   if (Serial.available()) {
     handleStream(&Serial);
   }
-
+  
   // If at least one byte is available over TCP
   if (client.available()) {
     handleStream(&client);

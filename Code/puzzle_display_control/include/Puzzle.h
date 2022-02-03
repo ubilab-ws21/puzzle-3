@@ -12,7 +12,7 @@
 #define Puzzle_h
 
 //macros for hintsystem
-#define SOLVED  10
+#define HSOLVED  10
 #define FIRSTHINT 1
 #define SECONDHINT 2
 #define THIRDHINT 3
@@ -49,7 +49,7 @@ PubSubClient mqtt(mqttClient);
 char msg[MSG_SIZE] = {'\0'};
 
 // Enum and global variable for puzzle game control
-enum gamecontrol {
+/*enum gamecontrol {
   idle = 0,
   antenna = 1,
   antennaSolved = 2,
@@ -59,7 +59,7 @@ enum gamecontrol {
   touchgameSolved = 6,
   solved = 7,
 };
-enum gamecontrol gameState = idle;
+enum gamecontrol gameState = idle;*/
 
 
 
@@ -69,14 +69,14 @@ StaticJsonDocument<2 * MSG_SIZE> dict;
 //function prototypes
 void mqttCallback(char*, byte*, unsigned int);
 void setupOTA();
-const char * puzzleStateToStr(gamecontrol);
-void puzzleStateChanged();
-void puzzleActive();
-void puzzleSolved();
+//const char * puzzleStateToStr(gamecontrol);
+//void puzzleStateChanged();
+//void puzzleActive();
+/* void puzzleSolved();
 void puzzleIdle();
 void puzzleAntenna();
 void puzzleMap();
-void puzzleTouchgame();
+void puzzleTouchgame(); */
 const char * handleMsg(const char *, const char *);
 void handleStream(Stream *);
 void mqtt_publish(const char*, const char*, const char*);

@@ -161,7 +161,6 @@ unsigned int check_ant_encoder()
         }
 
     ant_value = abs(encoder_ant.encoder_value);
-
     return ant_value;
 }
 
