@@ -104,6 +104,8 @@ void setup()
     // Volume 1 to 30
     mp3Player.volume(INIT_VOLUME);
 
+    mp3Player.stop();
+
     init_display();
     init_encoder();
 
@@ -164,7 +166,7 @@ void setup()
         Serial.println("Connected to MQTT server");
         // Subscribe to a certain topic
         //#TODO: add/put correct Topiclist here 
-        mqtt.subscribe("3/gamecontrol/#");
+        mqtt.subscribe("3/#");
     } else {
         Serial.println("Cannot connect to MQTT server");
     }
@@ -207,16 +209,23 @@ void main_state_machine()
         if(!flagset)
         {
            mp3Player.stop();
-           local_tft.sleep(true);
+           
+           Serial.print("init idle");
+           local_tft.sleep(true); 
            flagset = true;
         }
         if(check_game_encoders())
         {
+            Serial.print("game encoders turned");
             state = stateAntenna;
             flagset = false;
-            local_tft.sleep(false);
+            //local_tft.displayOn(true); 
+            local_tft.sleep(false); 
             // set antenna encoder to zero. 
             encoder_set_value(4, 0);
+            encoder_set_value(1, 0);
+            encoder_set_value(2, 0);
+            encoder_set_value(3, 0);
         }
         break;
     case stateAntenna:
@@ -241,7 +250,8 @@ void main_state_machine()
             #endif
             
             #ifdef MQTT
-            mqtt_publish("3/gamecontrol/antenna","state","solved");         //send to operator
+            mqtt_publish("3/gamecontrol/antenna","status","solved");         //send to operator
+            mqtt_publish("game/puzzle3/antenna","trigger","solved");        //send to hintsystem
             #endif
         }
         else
@@ -266,7 +276,6 @@ void main_state_machine()
 
             flagset = true;
             startTimeMap = millis();
-            
         }
         if(check_touch_or_encoder_events())
         {
@@ -276,7 +285,7 @@ void main_state_machine()
         if((millis() - startTimeMap > 120000) && (secondHint == false)){
             secondHint = true;
             #ifdef MQTT
-            publish_Hint(3,SECONDHINT);
+            mqtt_publish("game/puzzle3/map","trigger","active_2");
             #endif
         }
         
@@ -288,7 +297,8 @@ void main_state_machine()
             #endif
             solved = false;
             #ifdef MQTT
-            mqtt_publish("3/gamecontrol/map","state","solved");         //send to operator
+            mqtt_publish("3/gamecontrol/map","status","solved");         //send to operator
+            mqtt_publish("game/puzzle3/map","trigger","solved");        //send to hintsystem
             #endif
         }       
         break;
@@ -310,12 +320,17 @@ void main_state_machine()
         #ifdef MQTT
         if((millis() - startTimeTouch > 120000) && (sendHint == 1)){     //send second hint after 2 minutes
             sendHint = 2;
-            publish_Hint(3,SECONDHINT);
+            mqtt_publish("game/puzzle3/touchgame","trigger","active_2");
         }
 
         if((millis() - startTimeTouch > 240000) && (sendHint == 2)){     //send third hint after 4 minutes
             sendHint = 3;
-            publish_Hint(3,THIRDHINT);
+            mqtt_publish("game/puzzle3/touchgame","trigger","active_3");
+        }
+
+        if((millis() - startTimeTouch > 360000) && (sendHint == 3)){     //send fourth hint after 6 minutes
+            sendHint = 4;
+            mqtt_publish("game/puzzle3/touchgame","trigger","active_4");
         }
         #endif
 
@@ -326,8 +341,8 @@ void main_state_machine()
             flagset = false;
             #endif
             #ifdef MQTT
-            mqtt_publish("3/gamecontrol/touchgame","state","solved");       //send to operator
-            publish_Hint(3,HSOLVED)      //send to hintsystem
+            mqtt_publish("3/gamecontrol/touchgame","status","solved");       //send to operator
+            mqtt_publish("game/puzzle3/touchgame","trigger","solved");      //send to hintsystem
             #endif
         }
         break;
@@ -438,19 +453,20 @@ const char * handleMsg(const char * msg, const char* topic) {
   // strcmp returns zero on a match
   if (strcmp(msg, "solved") == 0) {
     //puzzleSolved();
-    state = stateDone;
+    //state = stateDone;
   } else if ( (strcmp(topic,"3/gamecontrol/antenna") == 0) && (strcmp(msg, "off") == 0)) {
     //puzzleIdle(); //maybe different idle state required
     flagset = false;
     state = stateIdle;
+    //local_tft.fillScreen(RA8875_BLACK);
     Serial.println("Idle");
   } else if ( (strcmp(topic,"3/gamecontrol/antenna") == 0) && (strcmp(msg, "on") == 0)) {
     //puzzleAntenna();
     flagset = false;
     state = stateAntenna;
     Serial.println("Antenna");
-    mqtt_publish("3/gamecontrol/antenna","state","active");
-    publish_Hint(1,FIRSTHINT);  //release first hint for the antenna game
+    mqtt_publish("3/gamecontrol/antenna","status","active");
+    mqtt_publish("game/puzzle3/antenna","trigger","active_1");  //release first hint for the antenna game
   } else if ((strcmp(topic,"3/gamecontrol/map") == 0) && (strcmp(msg, "off") == 0)){
     //puzzleIdle(); //maybe different idle state required
     flagset = false;
@@ -458,20 +474,25 @@ const char * handleMsg(const char * msg, const char* topic) {
   } else if ((strcmp(topic,"3/gamecontrol/map") == 0) && (strcmp(msg, "on") == 0)) {
     //puzzleMap();
     Serial.println("Map");
-    mqtt_publish("3/gamecontrol/map","state","active");
-    publish_Hint(2,FIRSTHINT);  //release first hint for the map/frequency game
+    mqtt_publish("3/gamecontrol/map","status","active");
+    mqtt_publish("game/puzzle3/map","trigger","active_1");  //release first hint for the map/frequency game
     flagset = false;
     state = stateFrequency;
+    ant_value = ANTENNA_CORRECT_POS;
+    encoder_set_value(4, ANTENNA_CORRECT_POS);
   } else if ((strcmp(topic,"3/gamecontrol/touchgame") == 0) && (strcmp(msg, "off") == 0)){
     //puzzleIdle(); //maybe different idle state required
     flagset = false;
     state = stateIdle;
   } else if ((strcmp(topic,"3/gamecontrol/touchgame") == 0) && (strcmp(msg, "on") == 0)) {
     //puzzleTouchgame();
-    mqtt_publish("3/gamecontrol/touchgame","state","active");
-    publish_Hint(3,FIRSTHINT);  //release first hint for the touchgame
+    mqtt_publish("3/gamecontrol/touchgame","status","active");
+    mqtt_publish("game/puzzle3/touchgame","trigger","active_1");
     flagset = false;
     state = stateLogin;
+    ant_value = ANTENNA_CORRECT_POS;
+    encoder_set_value(4, ANTENNA_CORRECT_POS);
+    set_solved_frequency(1332);
     Serial.println("Touch");
   } else if (strcmp(msg, "idle") == 0) {
     //puzzleIdle();
@@ -553,34 +574,55 @@ void mqtt_publish(const char* topic, const char* method, const char* state){
 }
 
 void publish_Hint(char game, char hintcount){
-  const char hintTopic[] = "game/puzzle3";
+  const char antennaTopic[] = "game/puzzle3/antenna";
+  const char mapTopic[] = "game/puzzle3/map";
+  const char touchTopic[] = "game/puzzle3/touchgame";
   switch (game)
   {
   case 1:
     if(hintcount == FIRSTHINT){
-      mqtt.publish(hintTopic,"antenna_activate_1",true);
+      mqtt_publish(antennaTopic,"trigger","active_1");
+    }
+    else if(hintcount == INACTIVE){
+      mqtt_publish(antennaTopic,"trigger","inactive");
+    }
+    else if(hintcount == HSOLVED){
+      mqtt_publish(antennaTopic,"trigger","solved");
     }
     break;
   case 2:
     if(hintcount == FIRSTHINT){
-      mqtt.publish(hintTopic,"map_activate_1",true);
+      mqtt_publish(mapTopic,"trigger","active_1");
     }
     else if(hintcount == SECONDHINT){
-      mqtt.publish(hintTopic,"map_activate_2",true);
+      mqtt_publish(mapTopic,"trigger","active_2");
+    }
+    else if(hintcount == INACTIVE){
+      mqtt_publish(mapTopic,"trigger","inactive");
+    }
+    else if(hintcount == HSOLVED){
+      mqtt_publish(mapTopic,"trigger","solved");
     }
     case 3:
       if(hintcount == FIRSTHINT){
-        mqtt.publish(hintTopic,"touch_activate_1",true);
+        mqtt_publish(touchTopic,"trigger","active_1");
       }
       else if(hintcount == SECONDHINT){
-        mqtt.publish(hintTopic,"touch_activate_2",true);
+        mqtt_publish(touchTopic,"trigger","active_2");
       }
       else if(hintcount == THIRDHINT){
-        mqtt.publish(hintTopic,"touch_activate_3",true);
+        mqtt_publish(touchTopic,"trigger","active_3");
+      }
+      else if(hintcount == FOURTHHINT){
+        mqtt_publish(touchTopic,"trigger","active_4");
+      }
+      else if(hintcount == INACTIVE){
+        mqtt_publish(touchTopic,"trigger","inactive");
       }
       else if(hintcount == HSOLVED){
-        mqtt.publish(hintTopic,"solved");
+        mqtt_publish(touchTopic,"trigger","solved");
       }
+  default:
     break;
   }
 }
