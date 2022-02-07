@@ -306,13 +306,13 @@ void final_screen()
         local_tft.textMode();
         char unithourString[2];
         char tenhourString[2];
-        itoa(CurrentHour%10, unithourString, 10); 
-        itoa((CurrentHour/10)%10, tenhourString, 10); 
+        itoa((CurrentHour%10), unithourString, 10); 
+        itoa(((CurrentHour/10)%10), tenhourString, 10); 
 
         char unitminuteString[2];
         char tenminuteString[2];
-        itoa(CurrentMinute%10, unitminuteString, 10); 
-        itoa((CurrentMinute/10)%10, tenminuteString, 10); 
+        itoa((CurrentMinute%10), unitminuteString, 10); 
+        itoa(((CurrentMinute/10)%10), tenminuteString, 10); 
 
         char unitsecondString[2];
         char tensecondString[2];
@@ -325,7 +325,7 @@ void final_screen()
         local_tft.textWrite(tenhourString);
         local_tft.textSetCursor(310,200);
         local_tft.textTransparent(RA8875_GREEN);
-        local_tft.textWrite(tenhourString);
+        local_tft.textWrite(unithourString);
         local_tft.textSetCursor(350, 200);
         local_tft.textTransparent(RA8875_BLUE);
         local_tft.textWrite(":");
