@@ -31,7 +31,7 @@
 //#define OPERATORCONTROL
 
 // development mode if we want to leave the idle state without MQTT but with encoder rotation
-#define DEVELOPMENT_MODE
+//#define DEVELOPMENT_MODE
 
 void main_state_machine(void);
 bool check_touch_or_encoder_events(void);
