@@ -108,6 +108,7 @@ void setup()
     init_display();
     init_encoder();
 
+
     state = stateIdle;
 
     ant_state = antenna_Level2;
@@ -144,18 +145,6 @@ void setup()
     // The service this device hosts (example)
     MDNS.addService("_escape", "_tcp", 2000);
 
-    /*************************
-         Connect to TCP server
-    *************************/
-    if (client.connect(SERVER_IP, SERVER_PORT))
-    {
-        Serial.println("Connected to server");
-    }
-    else
-    {
-        Serial.println("Cannot connect to server");
-    }
-
     // OTA setup in separate function
     setupOTA();
 
@@ -178,6 +167,10 @@ void setup()
     {
         Serial.println("Cannot connect to MQTT server");
     }
+#endif
+
+#ifdef MQTT
+    init_time();
 #endif
     // Indicate end of setup
     Serial.println("Setup done!");
@@ -353,7 +346,7 @@ void main_state_machine()
 
     case stateDone:
         if (!flagset)
-        {
+        {   fill_display(BACKGROUND_COLOR);
             setup_final_screen();
             flagset = true;
             mp3Player.stop();

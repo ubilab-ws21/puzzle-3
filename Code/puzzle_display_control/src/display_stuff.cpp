@@ -1,5 +1,6 @@
 #include "display_stuff.h"
 #include <NTPClient.h>
+#include <WiFi.h>
 #include <WiFiUdp.h>
 #include <string.h>
 //#include "time.h"
@@ -188,9 +189,8 @@ struct tm timeinfo;
 bool timeFail = true;
 bool timeFailedBefore = true;
 
-void setup_final_screen()
+void init_time()
 {
-
     // Initialize a NTPClient to get time
     timeClient.begin();
     // Set offset time in seconds to adjust for your timezone, for example:
@@ -199,10 +199,15 @@ void setup_final_screen()
     // GMT -1 = -3600
     // GMT 0 = 0
     timeClient.setTimeOffset(3600);
+}
+
+
+void setup_final_screen()
+{
 
     int cur_time = millis();
     timeFail = true; 
-    while(millis() - cur_time < 5000) {
+    while(millis() - cur_time < 2000) {
         if(timeClient.update())
         {
             timeFail = false; 
@@ -213,7 +218,6 @@ void setup_final_screen()
         timeClient.begin();
         timeClient.setTimeOffset(3600);
         delay(100);
-        //timeClient.forceUpdate();
     }
 
     if(timeFail == true)
@@ -221,27 +225,16 @@ void setup_final_screen()
         Serial.println("failed to obtain time");
     }
     else
-    {/*
-        formattedTime = timeClient.getFormattedTime();
-
-        int splitH = formattedTime.indexOf(":");
-        hourStamp = formattedTime.substring(0, splitH);
-        int splitM = formattedTime.lastIndexOf(":");
-        minuteStamp = formattedTime.substring(splitH+1, splitM);
-        secondStamp = formattedTime.substring(splitM+1);
-
-        Serial.println("stamps:");
-        Serial.print(minuteStamp);
-        Serial.println(secondStamp);*/
-
+    {
         CurrentSecond = timeClient.getSeconds();
         CurrentMinute = timeClient.getMinutes();
         CurrentHour = timeClient.getHours();
-    }
-
-    static Adafruit_RA8875 local_tft = gettft();
-    local_tft.graphicsMode();
-    local_tft.fillScreen(RA8875_BLACK);
+        Serial.print("Current time: ");
+        Serial.print(CurrentHour);
+        Serial.print(" : ");
+        Serial.print(CurrentMinute);
+        Serial.print(" : ");
+        Serial.print(CurrentSecond);    }
 
     delay(1000);
 }
@@ -288,7 +281,6 @@ void final_screen()
             timeClient.begin();
             timeClient.setTimeOffset(3600);
             delay(100);
-            //timeClient.forceUpdate();
         }
 
         if(timeFail == true)
@@ -297,25 +289,11 @@ void final_screen()
         }
         else
         {
-            /*
-            formattedTime = timeClient.getFormattedTime();
-
-            int splitH = formattedTime.indexOf(":");
-            hourStamp = formattedTime.substring(0, splitH);
-            int splitM = formattedTime.lastIndexOf(":");
-            minuteStamp = formattedTime.substring(splitH+1, splitM);
-            secondStamp = formattedTime.substring(splitM+1);
-
-            Serial.println("stamps:");
-            Serial.print(minuteStamp);
-            Serial.println(secondStamp);
-*/
             CurrentSecond = timeClient.getSeconds();
             CurrentMinute = timeClient.getMinutes();
             CurrentHour = timeClient.getHours();
 
             Serial.println(CurrentSecond);
-
         }
     }
 

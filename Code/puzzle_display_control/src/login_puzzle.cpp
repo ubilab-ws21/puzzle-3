@@ -466,7 +466,10 @@ bool login_game(tsPoint_t touch_raw)
                 rec_section = cursor_rect.section;
 
                 // try to find next free placeholder for cursor rectangle in the password area
+                Serial.print("rec section, old - new: ");
+                Serial.println(rec_section);
                 rec_section = find_next_free_placeholder(true, rec_section);
+                Serial.println(rec_section);
                 if(rec_section != -1)
                 {
                     // place cursor in this next free placeholder.
@@ -490,7 +493,7 @@ bool login_game(tsPoint_t touch_raw)
     }
     
     // Do we need to check whether the game was successfully solved? This is the case when there is no free placeholder anymore in the password area.
-    if(find_next_free_placeholder(true, 18) == -1 || reset_pressed)
+    if(find_next_free_placeholder(true, 17) == -1 || reset_pressed)
     {
         if(is_rect_puzzle_solved() && !reset_pressed)
         {   
@@ -760,7 +763,6 @@ int find_next_free_placeholder(bool right, int rec_section)
     bool free_place_found = false;
     if(right)
     {
-        
         for(int iterate_rec_section=rec_section-18+1; iterate_rec_section<NUM_SECTIONS_X; iterate_rec_section++)
         {
             if(placeholder_letters[iterate_rec_section] == repl[0])
@@ -775,8 +777,11 @@ int find_next_free_placeholder(bool right, int rec_section)
         else
         {
             skip_recs = 0;
-            for(int iterate_rec_section=18; iterate_rec_section<rec_section; iterate_rec_section++)
+            for(int iterate_rec_section=0; iterate_rec_section<(rec_section-18); iterate_rec_section++)
             {
+                Serial.print("iterating...");
+                Serial.println(iterate_rec_section);
+                Serial.println(placeholder_letters[iterate_rec_section]);
                 if(placeholder_letters[iterate_rec_section] == repl[0])
                 {
                     free_place_found = true;
