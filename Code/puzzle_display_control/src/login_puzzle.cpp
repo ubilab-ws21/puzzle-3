@@ -439,58 +439,50 @@ bool login_game(tsPoint_t touch_raw)
         {
         case NONE_SECTION:
             break;
-        /*case SHOW_SECTION:
-            if(random_letter_generation(false))
-            {
-                //show letters. 
-                blink_section_letters();
-            }
-            break;
-        */
         case RESET_SECTION:
             // this will result in resetting the game
             reset_pressed = true;
             break;
         case LETTER_SECTION:
             // a letter section has been touched. 
-            int section = get_section(calibrated.x, calibrated.y);
+            x = game_rect.tr_corner.x;
+            y = game_rect.tr_corner.y;
+            color = game_rect.color;
+            int section = game_rect.section;
 
-            if(game_rect.section == section)
+            int placeholder_x, placeholder_y;
+            section_to_xy(cursor_rect.section, &placeholder_x, &placeholder_y);                
+
+            local_tft.fillRect(game_rect.tr_corner.x, game_rect.tr_corner.y, REC_SIZE_X, REC_SIZE_Y, game_rect.color);
+            
+            
+            if(is_section_with_letter(section))
             {
-                // only do something if touched section matches the section of the rectangle
-                Serial.println("section");
-                Serial.println(section);
-                x = game_rect.tr_corner.x;
-                y = game_rect.tr_corner.y;
-                color = game_rect.color;
-                section = game_rect.section;
+                // if section is a section containing a letter, shift this letter to the current cursor position in the password space
+                char mychar = get_letter(section);
+                shift_letter(section, cursor_rect.section);
+                Serial.println(mychar);
+                local_tft.drawChar(placeholder_x + 50, placeholder_y + 50, mychar, RA8875_BLACK, RA8875_YELLOW , 5);
+                rec_section = cursor_rect.section;
 
-                int placeholder_x, placeholder_y;
-                section_to_xy(cursor_rect.section, &placeholder_x, &placeholder_y);                
-
-                local_tft.fillRect(game_rect.tr_corner.x, game_rect.tr_corner.y, REC_SIZE_X, REC_SIZE_Y, game_rect.color);
-                
-                if(is_section_with_letter(section))
+                // try to find next free placeholder for cursor rectangle in the password area
+                rec_section = find_next_free_placeholder(true, rec_section);
+                if(rec_section != -1)
                 {
-                    // if section is a section containing a letter, shift this letter to the current cursor position in the password space
-                    char mychar = get_letter(section);
-                    shift_letter(section, cursor_rect.section);
-                    Serial.println(mychar);
-                    local_tft.drawChar(placeholder_x + 50, placeholder_y + 50, mychar, RA8875_BLACK, RA8875_YELLOW , 5);
-                    rec_section = cursor_rect.section;
-
-                    // try to find next free placeholder for cursor rectangle in the password area
-                    rec_section = find_next_free_placeholder(true, rec_section);
-                    if(rec_section != -1)
-                    {
-                        // place cursor in this next free placeholder.
-                        local_tft.drawRect(cursor_rect.tr_corner.x+5, cursor_rect.tr_corner.y+5, REC_SIZE_X-10, REC_SIZE_Y-10, RA8875_YELLOW);
-                        cursor_rect.section = rec_section;
-                        section_to_xy(rec_section, &cursor_rect.tr_corner.x, &cursor_rect.tr_corner.y);
-                        local_tft.drawRect(cursor_rect.tr_corner.x+5, cursor_rect.tr_corner.y+5, REC_SIZE_X-10, REC_SIZE_Y-10, cursor_rect.color);
-                    }         
-                }
+                    // place cursor in this next free placeholder.
+                    local_tft.drawRect(cursor_rect.tr_corner.x+5, cursor_rect.tr_corner.y+5, REC_SIZE_X-10, REC_SIZE_Y-10, RA8875_YELLOW);
+                    cursor_rect.section = rec_section;
+                    section_to_xy(rec_section, &cursor_rect.tr_corner.x, &cursor_rect.tr_corner.y);
+                    local_tft.drawRect(cursor_rect.tr_corner.x+5, cursor_rect.tr_corner.y+5, REC_SIZE_X-10, REC_SIZE_Y-10, cursor_rect.color);
+                }         
             }
+            else
+            {
+                local_tft.fillRect(game_rect.tr_corner.x, game_rect.tr_corner.y, REC_SIZE_X, REC_SIZE_Y, RA8875_RED);
+                delay(200);
+                local_tft.fillRect(game_rect.tr_corner.x, game_rect.tr_corner.y, REC_SIZE_X, REC_SIZE_Y, game_rect.color);
+            }
+
             break;
         }
         last_action = last_action_none;
