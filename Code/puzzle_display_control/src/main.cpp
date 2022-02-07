@@ -30,6 +30,9 @@
 #define MQTT
 //#define OPERATORCONTROL
 
+// development mode if we want to leave the idle state without MQTT but with encoder rotation
+#define DEVELOPMENT_MODE
+
 void main_state_machine(void);
 bool check_touch_or_encoder_events(void);
 bool check_correct_antenna_pos(unsigned int);
@@ -215,19 +218,21 @@ void main_state_machine()
             local_tft.sleep(true);
             flagset = true;
         }
+        // set antenna encoder to zero.
+        encoder_set_value(4, 0);
+
+        #ifdef DEVELOPMENT_MODE
         if (check_game_encoders())
         {
             Serial.print("game encoders turned");
             state = stateAntenna;
             flagset = false;
-            // local_tft.displayOn(true);
             local_tft.sleep(false);
-            // set antenna encoder to zero.
-            encoder_set_value(4, 0);
             encoder_set_value(1, 0);
             encoder_set_value(2, 0);
             encoder_set_value(3, 0);
         }
+        #endif
         break;
     case stateAntenna:
         if (!flagset)
@@ -470,6 +475,7 @@ const char *handleMsg(const char *msg, const char *topic)
         // puzzleAntenna();
         flagset = false;
         state = stateAntenna;
+        local_tft.sleep(false);
         Serial.println("Antenna");
         mqtt_publish("3/gamecontrol/antenna", "status", "active");
         publish_Hint(1, FIRSTHINT); // release first hint for the antenna game
