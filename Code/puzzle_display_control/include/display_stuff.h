@@ -30,6 +30,7 @@ enum
 int handleTouchEvent(tsPoint_t * point);
 int waitForTouchorEncoderEvent(tsPoint_t *point);
 void section_to_xy(int section, int* x, int* y);
+void setup_final_screen(void);
 void first_screen(void);
 void final_screen(void);
 void set_last_action(int last);

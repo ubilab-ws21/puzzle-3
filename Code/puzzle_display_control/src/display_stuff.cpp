@@ -1,5 +1,29 @@
 #include "display_stuff.h"
+#include <NTPClient.h>
+#include <WiFiUdp.h>
+#include <string.h>
+//#include "time.h"
 
+using namespace std;
+
+// Define NTP Client to get time
+WiFiUDP ntpUDP;
+NTPClient timeClient(ntpUDP);
+
+// Variables to save date and time
+String formattedTime;
+String hourStamp;
+String minuteStamp;
+String secondStamp;
+String timeStamp;
+
+//Local Time Variables
+/*const char* ntpServer = "pool.ntp.org";
+const long  gmtOffset_sec = 3600;
+const int   daylightOffset_sec = 3600;*/
+
+int hourNow, CurrentHour, UnitHour, TenHour;
+int CurrentMinute, CurrentSecond;
 
 unsigned long last_touch_time;
 int frequency;
@@ -159,30 +183,196 @@ void first_screen()
     }
 }
 
+struct tm timeinfo;
+
+bool timeFail = true;
+bool timeFailedBefore = true;
+
+void setup_final_screen()
+{
+
+    // Initialize a NTPClient to get time
+    timeClient.begin();
+    // Set offset time in seconds to adjust for your timezone, for example:
+    // GMT +1 = 3600
+    // GMT +8 = 28800
+    // GMT -1 = -3600
+    // GMT 0 = 0
+    timeClient.setTimeOffset(3600);
+
+    int cur_time = millis();
+    timeFail = true; 
+    while(millis() - cur_time < 5000) {
+        if(timeClient.update())
+        {
+            timeFail = false; 
+            break;
+        }
+        timeClient.end();
+        delay(100);
+        timeClient.begin();
+        timeClient.setTimeOffset(3600);
+        delay(100);
+        //timeClient.forceUpdate();
+    }
+
+    if(timeFail == true)
+    {
+        Serial.println("failed to obtain time");
+    }
+    else
+    {/*
+        formattedTime = timeClient.getFormattedTime();
+
+        int splitH = formattedTime.indexOf(":");
+        hourStamp = formattedTime.substring(0, splitH);
+        int splitM = formattedTime.lastIndexOf(":");
+        minuteStamp = formattedTime.substring(splitH+1, splitM);
+        secondStamp = formattedTime.substring(splitM+1);
+
+        Serial.println("stamps:");
+        Serial.print(minuteStamp);
+        Serial.println(secondStamp);*/
+
+        CurrentSecond = timeClient.getSeconds();
+        CurrentMinute = timeClient.getMinutes();
+        CurrentHour = timeClient.getHours();
+    }
+
+    static Adafruit_RA8875 local_tft = gettft();
+    local_tft.graphicsMode();
+    local_tft.fillScreen(RA8875_BLACK);
+
+    delay(1000);
+}
 
 
 void final_screen()
 {
     static Adafruit_RA8875 local_tft = gettft();
-    local_tft.fillScreen(RA8875_BLUE);
+
+    //Serial.println(formattedTime);
+    //Serial.println(CurrentSecond);
+
+    if(timeFail == false)
+    {
+        CurrentSecond+=1;
+        if(CurrentSecond==60)
+        {
+            CurrentSecond = 0;
+            CurrentMinute+=1; 
+            if(CurrentMinute == 60)
+            {
+                CurrentHour+=1;
+                CurrentMinute = 0;
+                if(CurrentHour == 24)
+                {
+                    CurrentHour = 0;
+                }
+            }
+        }
+        Serial.println(CurrentSecond);
+    }
+    else
+    {
+        int cur_time = millis();
+        timeFail = true; 
+        while(millis() - cur_time < 2000) {
+            if(timeClient.update())
+            {
+                timeFail = false; 
+                break;
+            }
+            timeClient.end();
+            delay(100);
+            timeClient.begin();
+            timeClient.setTimeOffset(3600);
+            delay(100);
+            //timeClient.forceUpdate();
+        }
+
+        if(timeFail == true)
+        {
+            Serial.println("failed to obtain time");
+        }
+        else
+        {
+            /*
+            formattedTime = timeClient.getFormattedTime();
+
+            int splitH = formattedTime.indexOf(":");
+            hourStamp = formattedTime.substring(0, splitH);
+            int splitM = formattedTime.lastIndexOf(":");
+            minuteStamp = formattedTime.substring(splitH+1, splitM);
+            secondStamp = formattedTime.substring(splitM+1);
+
+            Serial.println("stamps:");
+            Serial.print(minuteStamp);
+            Serial.println(secondStamp);
+*/
+            CurrentSecond = timeClient.getSeconds();
+            CurrentMinute = timeClient.getMinutes();
+            CurrentHour = timeClient.getHours();
+
+            Serial.println(CurrentSecond);
+
+        }
+    }
 
     local_tft.textMode();
 
-    local_tft.textSetCursor(140, 100);
-
-    local_tft.textTransparent(RA8875_RED);
-    local_tft.textEnlarge(2);
-    local_tft.textWrite("Code: ");
-
-    local_tft.graphicsMode();
-
-    char password[5] = "1234";
-    int x, y;
-    
-    for(int i = 0; i<4; i++)
+    if(timeFail == false)
     {
-        section_to_xy(i+13, &x, &y);
-        local_tft.drawChar(x+30, y+30, password[i], RA8875_RED, RA8875_BLUE, 10);
-        //placeholder_letters[i] = {};
+        local_tft.graphicsMode();
+        local_tft.fillScreen(BACKGROUND_COLOR);
+        local_tft.textMode();
+        char unithourString[2];
+        char tenhourString[2];
+        itoa(CurrentHour%10, unithourString, 10); 
+        itoa((CurrentHour/10)%10, tenhourString, 10); 
+
+        char unitminuteString[2];
+        char tenminuteString[2];
+        itoa(CurrentMinute%10, unitminuteString, 10); 
+        itoa((CurrentMinute/10)%10, tenminuteString, 10); 
+
+        char unitsecondString[2];
+        char tensecondString[2];
+        itoa(CurrentSecond%10, unitsecondString, 10); 
+        itoa((CurrentSecond/10)%10, tensecondString, 10); 
+
+        local_tft.textSetCursor(270,200);
+        local_tft.textEnlarge(3);
+        local_tft.textTransparent(RA8875_RED);
+        local_tft.textWrite(tenhourString);
+        local_tft.textSetCursor(310,200);
+        local_tft.textTransparent(RA8875_GREEN);
+        local_tft.textWrite(tenhourString);
+        local_tft.textSetCursor(350, 200);
+        local_tft.textTransparent(RA8875_BLUE);
+        local_tft.textWrite(":");
+        local_tft.textSetCursor(380, 200);
+        local_tft.textWrite(tenminuteString);
+        local_tft.textSetCursor(420, 200);
+        local_tft.textWrite(unitminuteString);
+        local_tft.textSetCursor(460, 200);
+        local_tft.textWrite(":");
+        local_tft.textSetCursor(490, 200);
+        local_tft.textWrite(tensecondString);
+        local_tft.textSetCursor(530, 200);
+        local_tft.textWrite(unitsecondString);
     }
+    else
+    {
+        local_tft.textSetCursor(50,200);
+        local_tft.textEnlarge(1);
+        local_tft.textTransparent(RA8875_BLUE);
+        local_tft.textWrite("Imagine the current time was displayed here...");
+    }
+    
+
+
+    
+
+    delay(1000);
 }
