@@ -53,7 +53,8 @@ enum GameState
     stateAntenna,
     stateFrequency,
     stateLogin,
-    stateDone
+    stateDone,
+    stateFinal
 };
 
 enum AntennaState
@@ -363,6 +364,12 @@ void main_state_machine()
         }
         final_screen();
         break;
+    case stateFinal:
+        if(!flagset){
+            flagset = true;
+            mp3Player.playFolder(goodNews);
+        }
+        final_screen();
     }
 
     // check if volume has been changed (by triggering volume controller)
@@ -523,6 +530,14 @@ const char *handleMsg(const char *msg, const char *topic)
         // puzzleIdle();
         flagset = false;
         state = stateIdle;
+    }
+    else if ((strcmp(topic, "3/audiocontrol/roomsolved") == 0) && (strcmp(msg, "on") == 0))
+    {
+        if(state != stateFinal){
+            flagset = false;
+            state = stateFinal;
+            Serial.println("FinalMessage");
+        }
     }
     else
     {
