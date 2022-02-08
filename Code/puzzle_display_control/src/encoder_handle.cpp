@@ -186,9 +186,6 @@ int encoder_get_value(int encoder_num)
 ***********************************************************************/
 void encoder_set_value(int encoder_num, int value)
 {
-    Serial.print("set encoder ");
-    Serial.print(encoder_num);
-    Serial.print(" to value ");
     if(encoder_num <= NUM_ENCODERS_DEFINED && encoder_num > 0)
     {
         Serial.print(value);

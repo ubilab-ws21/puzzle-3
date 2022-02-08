@@ -319,25 +319,25 @@ void final_screen()
         itoa(CurrentSecond%10, unitsecondString, 10); 
         itoa((CurrentSecond/10)%10, tensecondString, 10); 
 
-        local_tft.textSetCursor(270,200);
-        local_tft.textEnlarge(3);
+        local_tft.textSetCursor(200,200);
+        local_tft.textEnlarge(4);
         local_tft.textTransparent(RA8875_RED);
         local_tft.textWrite(tenhourString);
-        local_tft.textSetCursor(310,200);
+        local_tft.textSetCursor(250,200);
         local_tft.textTransparent(RA8875_GREEN);
         local_tft.textWrite(unithourString);
-        local_tft.textSetCursor(350, 200);
+        local_tft.textSetCursor(280, 200);
         local_tft.textTransparent(RA8875_BLUE);
         local_tft.textWrite(":");
-        local_tft.textSetCursor(380, 200);
+        local_tft.textSetCursor(320, 200);
         local_tft.textWrite(tenminuteString);
-        local_tft.textSetCursor(420, 200);
+        local_tft.textSetCursor(370, 200);
         local_tft.textWrite(unitminuteString);
-        local_tft.textSetCursor(460, 200);
+        local_tft.textSetCursor(410, 200);
         local_tft.textWrite(":");
-        local_tft.textSetCursor(490, 200);
+        local_tft.textSetCursor(440, 200);
         local_tft.textWrite(tensecondString);
-        local_tft.textSetCursor(530, 200);
+        local_tft.textSetCursor(490, 200);
         local_tft.textWrite(unitsecondString);
     }
     else

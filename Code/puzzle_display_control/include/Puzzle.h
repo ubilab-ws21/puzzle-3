@@ -80,5 +80,5 @@ void puzzleTouchgame(); */
 const char * handleMsg(const char *, const char *);
 void handleStream(Stream *);
 void mqtt_publish(const char*, const char*, const char*);
-void publish_Hint(char, char);
+void publish_Hint(int, int);
 #endif

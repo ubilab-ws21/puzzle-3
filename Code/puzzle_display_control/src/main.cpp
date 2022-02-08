@@ -87,7 +87,6 @@ JsonObject JSONencoder = doc.to<JsonObject>();
 void setup()
 {
     Serial.begin(9600);
-    Serial.println("Hello, RA8875!");
 
     DFPlayerSoftwareSerial.begin(9600);
 
@@ -107,15 +106,6 @@ void setup()
     mp3Player.volume(INIT_VOLUME);
 
     mp3Player.stop();
-
-    init_display();
-    init_encoder();
-
-
-    state = stateIdle;
-
-    ant_state = antenna_Level2;
-    old_ant_state = antenna_Level2;
 
 #ifdef MQTT
     /*********************
@@ -171,6 +161,15 @@ void setup()
         Serial.println("Cannot connect to MQTT server");
     }
 #endif
+
+    Serial.println("Hello, RA8875!");
+    init_display();
+    init_encoder();
+
+    state = stateIdle;
+
+    ant_state = antenna_Level2;
+    old_ant_state = antenna_Level2;
 
 #ifdef MQTT
     init_time();
@@ -457,10 +456,11 @@ void handleStream(Stream *getter)
 const char *handleMsg(const char *msg, const char *topic)
 {
     // strcmp returns zero on a match
-    if (strcmp(msg, "solved") == 0)
+    if ((strcmp(topic, "3/gamecontrol/final") == 0) && (strcmp(msg, "solved") == 0))
     {
         // puzzleSolved();
-        // state = stateDone;
+        state = stateDone;
+        flagset = false;
     }
     else if ((strcmp(topic, "3/gamecontrol/antenna") == 0) && (strcmp(msg, "off") == 0))
     {
@@ -601,7 +601,7 @@ void mqtt_publish(const char *topic, const char *method, const char *state)
     mqtt.publish(topic, JSONmessageBuffer, true); //"test", retained);
 }
 
-void publish_Hint(char game, char hintcount)
+void publish_Hint(int game, int hintcount)
 {
     const char hintTopic[] = "game/puzzle3";
     switch (game)
@@ -609,16 +609,19 @@ void publish_Hint(char game, char hintcount)
     case 1:
         if (hintcount == FIRSTHINT)
         {
+            Serial.print("sending hint 1");
             mqtt.publish(hintTopic, "antenna_activate_1", true);
         }
         break;
     case 2:
         if (hintcount == FIRSTHINT)
         {
+            Serial.print("sending hint 1");
             mqtt.publish(hintTopic, "map_activate_1", true);
         }
         else if (hintcount == SECONDHINT)
         {
+            Serial.print("sending hint 1");
             mqtt.publish(hintTopic, "map_activate_2", true);
         }
         break;
