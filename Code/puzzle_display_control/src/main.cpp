@@ -155,6 +155,7 @@ void setup()
         // Subscribe to a certain topic
         //#TODO: add/put correct Topiclist here
         mqtt.subscribe("3/gamecontrol/#");
+        mqtt.subscribe("3/audiocontrol/roomsolved");
     }
     else
     {
@@ -237,6 +238,8 @@ void main_state_machine()
         if (!flagset)
         {
             Serial.println("case 0");
+            publish_Hint(1, FIRSTHINT); // release first hint for the antenna game
+            mqtt_publish("3/gamecontrol/antenna", "status", "active");
             check_correct_antenna_pos(ant_value);
             mp3Player.loopFolder(ant_state);
             first_screen();
@@ -271,7 +274,8 @@ void main_state_machine()
         if (!flagset)
         {
             Serial.println("case 1");
-
+            mqtt_publish("3/gamecontrol/map", "status", "active");
+            publish_Hint(2, FIRSTHINT); // release first hint for the map/frequency game
             fill_display(BACKGROUND_COLOR);
             encoder_set_value(1, 0);
             encoder_set_value(2, 0);
@@ -311,6 +315,8 @@ void main_state_machine()
     case stateLogin:
         if (!flagset)
         {
+            mqtt_publish("3/gamecontrol/touchgame", "status", "active");
+            publish_Hint(3, FIRSTHINT); // release first hint for the touchgame
             mp3Player.loopFolder(Ferdi);
             init_rect();
             flagset = true;
@@ -472,13 +478,12 @@ const char *handleMsg(const char *msg, const char *topic)
     }
     else if ((strcmp(topic, "3/gamecontrol/antenna") == 0) && (strcmp(msg, "on") == 0))
     {
-        // puzzleAntenna();
-        flagset = false;
-        state = stateAntenna;
-        local_tft.sleep(false);
-        Serial.println("Antenna");
-        mqtt_publish("3/gamecontrol/antenna", "status", "active");
-        publish_Hint(1, FIRSTHINT); // release first hint for the antenna game
+        if(state != stateAntenna){
+            flagset = false;
+            state = stateAntenna;
+            local_tft.sleep(false);
+            Serial.println("Antenna");
+        }
     }
     else if ((strcmp(topic, "3/gamecontrol/map") == 0) && (strcmp(msg, "off") == 0))
     {
@@ -488,14 +493,13 @@ const char *handleMsg(const char *msg, const char *topic)
     }
     else if ((strcmp(topic, "3/gamecontrol/map") == 0) && (strcmp(msg, "on") == 0))
     {
-        // puzzleMap();
-        Serial.println("Map");
-        mqtt_publish("3/gamecontrol/map", "status", "active");
-        publish_Hint(2, FIRSTHINT); // release first hint for the map/frequency game
-        flagset = false;
-        state = stateFrequency;
-        ant_value = ANTENNA_CORRECT_POS;
-        encoder_set_value(4, ANTENNA_CORRECT_POS);
+        if(state != stateFrequency){
+            Serial.println("Map");
+            flagset = false;
+            state = stateFrequency;
+            ant_value = ANTENNA_CORRECT_POS;
+            encoder_set_value(4, ANTENNA_CORRECT_POS);
+        }
     }
     else if ((strcmp(topic, "3/gamecontrol/touchgame") == 0) && (strcmp(msg, "off") == 0))
     {
@@ -505,15 +509,14 @@ const char *handleMsg(const char *msg, const char *topic)
     }
     else if ((strcmp(topic, "3/gamecontrol/touchgame") == 0) && (strcmp(msg, "on") == 0))
     {
-        // puzzleTouchgame();
-        mqtt_publish("3/gamecontrol/touchgame", "status", "active");
-        publish_Hint(3, FIRSTHINT); // release first hint for the touchgame
-        flagset = false;
-        state = stateLogin;
-        ant_value = ANTENNA_CORRECT_POS;
-        encoder_set_value(4, ANTENNA_CORRECT_POS);
-        set_solved_frequency(1332);
-        Serial.println("Touch");
+        if(state != stateLogin){
+            flagset = false;
+            state = stateLogin;
+            ant_value = ANTENNA_CORRECT_POS;
+            encoder_set_value(4, ANTENNA_CORRECT_POS);
+            set_solved_frequency(1332);
+            Serial.println("Touch");
+        }
     }
     else if (strcmp(msg, "idle") == 0)
     {
