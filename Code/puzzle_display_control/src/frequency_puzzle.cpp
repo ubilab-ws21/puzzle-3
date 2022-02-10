@@ -107,7 +107,7 @@ bool sliding_bars(int encoder_num,  tsPoint_t touch_raw, int init)
     // Set the coordinated of the bars accordingly.
     if(encoder_num == 1)
     {
-        color = 0xFDE0;
+        color = 0xFDE0; //dark yellow
         max_Y_val = MAX_Y_VAL_1;
         min_Y_val = MIN_Y_VAL_1;
     }
@@ -119,7 +119,7 @@ bool sliding_bars(int encoder_num,  tsPoint_t touch_raw, int init)
     }
     else if(encoder_num == 3)
     {
-        color = RA8875_RED; //dark yellow
+        color = RA8875_RED; 
         max_Y_val = MAX_Y_VAL_3;
         min_Y_val = MIN_Y_VAL_3;
     }

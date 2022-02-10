@@ -347,10 +347,6 @@ void final_screen()
         local_tft.textTransparent(RA8875_BLUE);
         local_tft.textWrite("Imagine the current time was displayed here...");
     }
-    
-
-
-    
 
     delay(1000);
 }

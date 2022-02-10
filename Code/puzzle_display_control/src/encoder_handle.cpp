@@ -22,7 +22,7 @@ void init_encoder()
     
 
 	// use pin 19 and 18 for the first encoder
-	encoder[0]._encoder.attachSingleEdge(33, 32);
+	encoder[0]._encoder.attachSingleEdge(32, 33);
     encoder[0]._encoder.setFilter(1023);
 	// use pin 17 and 16 for the second encoder
 	
@@ -71,11 +71,11 @@ void init_encoder()
 
 
     // init volume encoder
-    encoder_vol._encoder.attachSingleEdge(22, 21);
+    encoder_vol._encoder.attachSingleEdge(21, 22);
     encoder_vol._encoder.setFilter(1023);
 
     // set starting count value after attaching
-    encoder_vol._encoder.setCount(15);
+    encoder_vol._encoder.setCount(8);
 
     // clear the encoder's raw count and set the tracked count to zero
     //encoder2.clearCount();

@@ -23,7 +23,7 @@
 #define LOW_NOISE 10
 #define rickroll 99 // default.
 
-#define INIT_VOLUME 15
+#define INIT_VOLUME 8
 
 #define ANTENNA_CORRECT_POS 12
 
@@ -59,7 +59,7 @@ enum GameState
 
 enum AntennaState
 {
-    antenna_NoNoise = 0,
+    //antenna_NoNoise = 0,
     antenna_Level0 = 10,
     antenna_Level1 = 11,
     antenna_Level2 = 12
@@ -241,9 +241,12 @@ void main_state_machine()
             Serial.println("case 0");
             publish_Hint(1, FIRSTHINT); // release first hint for the antenna game
             mqtt_publish("3/gamecontrol/antenna", "status", "active");
-            check_correct_antenna_pos(ant_value);
-            mp3Player.loopFolder(ant_state);
             first_screen();
+            check_correct_antenna_pos(ant_value);
+            if(ant_value < 10)
+            {
+                mp3Player.loopFolder(ant_state);
+            }
             flagset = true;
         }
 
@@ -367,9 +370,12 @@ void main_state_machine()
     case stateFinal:
         if(!flagset){
             flagset = true;
-            mp3Player.playFolder(goodNews);
+            mp3Player.loopFolder(goodNews);
+            mp3Player.volume(21);
+            encoder_set_value(5, 21);
         }
         final_screen();
+        break;
     }
 
     // check if volume has been changed (by triggering volume controller)
@@ -378,7 +384,7 @@ void main_state_machine()
         mp3Player.volume(new_vol);
     }
 
-    if (state > stateAntenna && state != stateDone)
+    if (state > stateAntenna && state < stateDone)
     {
         ant_value = check_ant_encoder();
 
