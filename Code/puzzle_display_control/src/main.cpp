@@ -494,8 +494,8 @@ const char *handleMsg(const char *msg, const char *topic)
     else if ((strcmp(topic, "3/gamecontrol/antenna") == 0) && (strcmp(msg, "off") == 0))
     {
         // puzzleIdle(); //maybe different idle state required
-        flagset = false;
-        state = stateIdle;
+        //flagset = false;
+        //state = stateIdle;
         Serial.println("Idle");
     }
     else if ((strcmp(topic, "3/gamecontrol/antenna") == 0) && (strcmp(msg, "on") == 0))
@@ -509,8 +509,8 @@ const char *handleMsg(const char *msg, const char *topic)
     else if ((strcmp(topic, "3/gamecontrol/map") == 0) && (strcmp(msg, "off") == 0))
     {
         // puzzleIdle(); //maybe different idle state required
-        flagset = false;
-        state = stateIdle;
+        //flagset = false;
+        //state = stateIdle;
     }
     else if ((strcmp(topic, "3/gamecontrol/map") == 0) && (strcmp(msg, "on") == 0))
     {
@@ -525,8 +525,8 @@ const char *handleMsg(const char *msg, const char *topic)
     else if ((strcmp(topic, "3/gamecontrol/touchgame") == 0) && (strcmp(msg, "off") == 0))
     {
         // puzzleIdle(); //maybe different idle state required
-        flagset = false;
-        state = stateIdle;
+        //flagset = false;
+        //state = stateIdle;
     }
     else if ((strcmp(topic, "3/gamecontrol/touchgame") == 0) && (strcmp(msg, "on") == 0))
     {
