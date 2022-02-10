@@ -69,7 +69,7 @@ void init_display()
     #endif
 
 
-    //fill_display(BACKGROUND_COLOR);
+    fill_display(BACKGROUND_COLOR);
     //tft.sleep(true);
 }
 

@@ -196,7 +196,7 @@ void loop()
 }
 
 unsigned int ant_value = 0;
-static Adafruit_RA8875 local_tft = gettft();
+
 /*
 to enable/disable own gamestate-control, it should be sufficient to en/disable the state-statements
 this is done with defines
@@ -208,6 +208,7 @@ unsigned int startTimeTouch = 0;
 
 void main_state_machine()
 {
+    static Adafruit_RA8875 local_tft = gettft();
     switch (state)
     {
     case stateIdle:
@@ -216,7 +217,12 @@ void main_state_machine()
             mp3Player.stop();
 
             Serial.print("init idle");
-            local_tft.sleep(true);
+            //local_tft.sleep(true);
+            local_tft.graphicsMode();
+            fill_display(RA8875_BLACK);
+            
+            //local_tft.fillRoundRect(0, 0, 100, 180, 10, RA8875_RED);
+            local_tft.displayOn(false);
             flagset = true;
         }
         // set antenna encoder to zero.
@@ -486,7 +492,6 @@ const char *handleMsg(const char *msg, const char *topic)
         // puzzleIdle(); //maybe different idle state required
         flagset = false;
         state = stateIdle;
-        // local_tft.fillScreen(RA8875_BLACK);
         Serial.println("Idle");
     }
     else if ((strcmp(topic, "3/gamecontrol/antenna") == 0) && (strcmp(msg, "on") == 0))
@@ -494,7 +499,6 @@ const char *handleMsg(const char *msg, const char *topic)
         if(state != stateAntenna){
             flagset = false;
             state = stateAntenna;
-            local_tft.sleep(false);
             Serial.println("Antenna");
         }
     }
@@ -664,7 +668,7 @@ void publish_Hint(int game, int hintcount)
         }
         else if (hintcount == HSOLVED)
         {
-            mqtt.publish(hintTopic, "solved");
+            mqtt.publish(hintTopic, "S");
         }
         break;
     default:

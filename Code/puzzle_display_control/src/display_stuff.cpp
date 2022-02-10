@@ -170,6 +170,7 @@ void first_screen()
     //local_tft.sleep(true);
     //local_tft.sleep(false);
     local_tft.graphicsMode();
+    local_tft.displayOn(true);
     fill_display(RA8875_BLACK);
  
     uint16_t lcd_buffer[1000];
@@ -243,6 +244,7 @@ void setup_final_screen()
 void final_screen()
 {
     static Adafruit_RA8875 local_tft = gettft();
+    local_tft.displayOn(true);
 
     //Serial.println(formattedTime);
     //Serial.println(CurrentSecond);

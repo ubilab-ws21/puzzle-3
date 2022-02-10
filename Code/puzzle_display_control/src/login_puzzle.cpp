@@ -57,6 +57,8 @@ void init_rect()
 {
     static Adafruit_RA8875 local_tft = gettft();
 
+    local_tft.displayOn(true);
+
     local_tft.fillScreen(BACKGROUND_COLOR);
 
     // first game rectangle position is in section 0, which is the top left section.

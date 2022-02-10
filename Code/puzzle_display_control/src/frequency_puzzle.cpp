@@ -38,6 +38,7 @@ int solved_values[3] = {10,-4,-1};
 void init_sliding_bars(void)
 {
     static Adafruit_RA8875 local_tft = gettft();
+    local_tft.displayOn(true);
 
     //--------------------------------------------------------------------------
     // this is just some text that is permanently printed on top of the screen. 
