@@ -376,7 +376,9 @@ void main_state_machine()
     case stateFinal:
         if(!flagset){
             flagset = true;
-            mp3Player.loopFolder(goodNews);
+            setup_final_screen();
+            mp3Player.playFolder(goodNews, 1);
+            mp3Player.disableLoopAll();
             mp3Player.volume(21);
             encoder_set_value(5, 21);
         }

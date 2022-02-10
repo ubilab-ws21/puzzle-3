@@ -208,16 +208,12 @@ void setup_final_screen()
 
     int cur_time = millis();
     timeFail = true; 
-    while(millis() - cur_time < 2000) {
+    while(millis() - cur_time < 3000) {
         if(timeClient.update())
         {
             timeFail = false; 
             break;
         }
-        timeClient.end();
-        delay(100);
-        timeClient.begin();
-        timeClient.setTimeOffset(3600);
         delay(100);
     }
 
@@ -235,7 +231,8 @@ void setup_final_screen()
         Serial.print(" : ");
         Serial.print(CurrentMinute);
         Serial.print(" : ");
-        Serial.print(CurrentSecond);    }
+        Serial.print(CurrentSecond);    
+    }
 
     delay(1000);
 }
@@ -269,7 +266,7 @@ void final_screen()
         Serial.println(CurrentSecond);
     }
     else
-    {
+    {/*
         int cur_time = millis();
         timeFail = true; 
         while(millis() - cur_time < 2000) {
@@ -296,7 +293,7 @@ void final_screen()
             CurrentHour = timeClient.getHours();
 
             Serial.println(CurrentSecond);
-        }
+        }*/
     }
 
     local_tft.textMode();
@@ -350,5 +347,5 @@ void final_screen()
         local_tft.textWrite("Imagine the current time was displayed here...");
     }
 
-    delay(1000);
+    vTaskDelay(1000);
 }
