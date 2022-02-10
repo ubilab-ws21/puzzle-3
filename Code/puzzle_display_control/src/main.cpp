@@ -377,10 +377,12 @@ void main_state_machine()
         if(!flagset){
             flagset = true;
             setup_final_screen();
+            mp3Player.disableLoop();
             mp3Player.playFolder(goodNews, 1);
             mp3Player.disableLoopAll();
             mp3Player.volume(21);
             encoder_set_value(5, 21);
+            Serial.println("play mp3 again");
         }
         final_screen();
         break;
